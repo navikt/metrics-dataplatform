@@ -1,4 +1,31 @@
+import re
 import pandas as pd
+
+
+
+def extract_tables_from_query(query):
+    """
+    Denne funksjonen finner og returnerer tabeller inkludert i en spørring
+
+    :param query: str: spørringen
+    :return: str: Tabeller identifisert, skilt med pipe
+    """
+    print(query)
+    regex_pattern = "(?<=FROM|JOIN|from|join)(\s`)+(\w|-|.)+?(`)+"
+    # Hvorfor funker ikke re.findall som re.search??
+    tables = []
+    matched = True
+    while matched:
+        try:
+            table = re.search(regex_pattern, query)[0].strip()
+            tables.append(table)
+            query = query.replace(table, '')
+        except TypeError: # Which is the case when re.search returns None
+            matched = False
+    print(tables)
+    tables = '|'.join(tables)
+
+    return tables
 
 
 
@@ -48,3 +75,5 @@ def calculate_retention_weekly(df, identifier_column, groupby_columns, time_colu
     df['retention_share'] = df['retention'].div(df['constant'])
 
     return df
+
+
