@@ -10,7 +10,6 @@ def extract_tables_from_query(query):
     :param query: str: spørringen
     :return: str: Tabeller identifisert, skilt med pipe
     """
-    print(query)
     regex_pattern = "(?<=FROM|JOIN|from|join)(\s`)+(\w|-|.)+?(`)+"
     # Hvorfor funker ikke re.findall som re.search??
     tables = []
@@ -22,7 +21,6 @@ def extract_tables_from_query(query):
             query = query.replace(table, '')
         except TypeError: # Which is the case when re.search returns None
             matched = False
-    print(tables)
     tables = '|'.join(tables)
 
     return tables

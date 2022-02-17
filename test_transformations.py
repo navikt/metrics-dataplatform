@@ -15,7 +15,6 @@ class TestExtractTables(unittest.TestCase):
 
     def test_two_tables(self):
         assert_val = extract_tables_from_query('select * from `location.table_x` join `location.table_y`')
-        print(assert_val)
         self.assertTrue(len(assert_val.split('|')) == 2)
 
 
