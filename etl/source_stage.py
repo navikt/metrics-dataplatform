@@ -34,7 +34,7 @@ def run_etl_general():
     df['service'] = True
     df.loc[df['principalEmail'].str.contains('@nav.no'), 'service'] = False
 
-        # Not sure if this makes sense
+    # Not sure if this makes sense
     df['tables_in_query'] = df['sql_query'].apply(lambda x: extract_tables_from_query(x))
 
     # Need to load the data to a staging layer
