@@ -36,9 +36,26 @@ def run_etl_general():
 
     # Not sure if this makes sense
     df['tables_in_query'] = df['sql_query'].apply(lambda x: extract_tables_from_query(x))
-
+    print(df.dtypes)
     # Need to load the data to a staging layer
+    project_id = 'nada-dev-db2e'
+    dataset = 'metrics'
 
+    DESTINATION_DATASET = f'{project_id}.{dataset}'
+    destination_table = f'{DESTINATION_DATASET}.stage'
+
+    table_schema = [
+        {'name': 'dato', 'type': 'DATE'},
+        {'name': 'env', 'type': 'STRING'},
+        {'name': 'datacenter', 'type': 'STRING'},
+        {'name': 'antall_apper', 'type': 'INT'}
+    ]
+
+    df.to_gbq(
+        destination_table=destination_table,
+        table_schema=table_schema,
+        if_exists='replace'
+    )
 
     return None
 
