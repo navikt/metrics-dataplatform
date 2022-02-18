@@ -36,21 +36,29 @@ def flag_retention_observations_weekly(df, identifier_column, groupby_columns, t
     :param time_column:
     :return:
     """
-    df['week'] = df[time_column].dt.isocalendar().week
-    df['last_week'] = (df[time_column] - pd.Timedelta(7, 'days')).dt.isocalendar().week
+    df['date'] = df[time_column].dt.date
 
     groupby_columns = groupby_columns[::]
     groupby_columns.append(identifier_column)
-    groupby_columns.append('week')
+    groupby_columns.append('date')
     df.sort_values(by=groupby_columns, ascending=False)
     df.drop_duplicates(subset=groupby_columns, inplace=True)
+    groupby_columns.remove('date')
 
-    groupby_columns.remove('week')
-    df['next_activity_week'] = df.groupby(groupby_columns)['last_week'].shift(-1)
-    df.drop('last_week', axis=1, inplace=True)
+    # Resample to days
+    df['constant'] = 1
+    df.set_index(time_column, inplace=True)
+    df = df.groupby(groupby_columns)['constant'].resample('d').sum().reset_index()
+    df.loc[df['constant'].isnull(), 'constant'] = 0
+    df.set_index(time_column, inplace=True)
+    print(df)
+    # Flag retention
+    df = df.groupby(groupby_columns)['constant'].rolling(7).sum().reset_index()
 
     df['retention'] = 0
-    df.loc[df['week'] == df['next_activity_week'], 'retention'] = 1
+    df.loc[df['constant'] > 1, 'retention'] = 1
+
+    print(df)
 
     return df
 
