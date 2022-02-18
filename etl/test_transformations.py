@@ -50,7 +50,7 @@ class TestRetention(unittest.TestCase):
         lookup_val = len(df[df['retention'].notnull()])
         self.assertTrue(lookup_val > 0)
 
-
+"""
 class TestRetetntion(unittest.TestCase):
     def setUp(self):
         self.test_df = pd.read_csv('test_data.csv', sep=';')
@@ -62,9 +62,9 @@ class TestRetetntion(unittest.TestCase):
 
     def test_retention_groupby_no_groupby(self):
         df = calculate_retention_weekly(self.test_df_multi, 'navn', [], 'periode')
-        lookup_val = df.loc[df['week'] == 1, 'retention_share'].values[0]
+        lookup_val = df.loc[df['periode'] == '04-01-2022', 'retention_share'].values[0]
         self.assertEqual(lookup_val, 2/3)
-
+"""
     def test_retention_groupby(self):
         df = calculate_retention_weekly(self.test_df_multi, 'navn', ['tabell'], 'periode')
         lookup_val = df.loc[(df['week'] == 1) & (df['tabell'] == 'sykepenger'), 'retention_share'].values[0]

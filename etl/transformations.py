@@ -46,19 +46,28 @@ def flag_retention_observations_weekly(df, identifier_column, groupby_columns, t
     groupby_columns.remove('date')
 
     # Resample to days
-    df['constant'] = 1
+    df['observation'] = 1
+    df_right = df.copy() # for merging later
+    df_right.drop(time_column, axis=1, inplace=True)
     df.set_index(time_column, inplace=True)
-    df = df.groupby(groupby_columns)['constant'].resample('d').sum().reset_index()
-    df.loc[df['constant'].isnull(), 'constant'] = 0
+    df = df.groupby(groupby_columns)['observation'].resample('d').sum().reset_index()
+    df.loc[df['observation'].isnull(), 'observation'] = 0
+
+    # Flag activity in periods
+    df.sort_values(time_column, ascending=False, inplace=True)
     df.set_index(time_column, inplace=True)
-    print(df)
-    # Flag retention
-    df = df.groupby(groupby_columns)['constant'].rolling(7).sum().reset_index()
+    df = df.groupby(groupby_columns)['observation'].rolling(7, min_periods=1, closed='left').sum().reset_index()
+    df.rename({'observation': 'obs_next_window'}, axis=1, inplace=True)
+
+    # Merge and flag retention
+    merge_columns = groupby_columns + ['date']
+    df['date'] = df[time_column].dt.date
+    df.drop(time_column, axis=1, inplace=True)
+    df = df.merge(df_right, on=merge_columns, how='left')
+    df[time_column] = pd.to_datetime(df['date'])
 
     df['retention'] = 0
-    df.loc[df['constant'] > 1, 'retention'] = 1
-
-    print(df)
+    df.loc[(df['obs_next_window'] > 0) & (df['observation'] == 1), 'retention'] = 1
 
     return df
 
@@ -74,11 +83,12 @@ def calculate_retention_weekly(df, identifier_column, groupby_columns, time_colu
     :return:
     """
     df = flag_retention_observations_weekly(df, identifier_column, groupby_columns, time_column)
-    df['constant'] = 1
-
-    groupby_columns.append('week')
-    df = df.groupby(groupby_columns)[['retention', 'constant']].sum().reset_index()
-    df['retention_share'] = df['retention'].div(df['constant'])
+    groupby_columns.append(time_column)
+    df = df.groupby(groupby_columns).sum().reset_index()
+    df.set_index(time_column, inplace=True)
+    df = df[['observation', 'retention']].rolling(7).sum().reset_index()
+    df['retention_share'] = df['retention'].div(df['observation'])
+    print(df)
 
     return df
 
