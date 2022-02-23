@@ -22,6 +22,7 @@ def run_etl_general():
     # Behandler datetimes for groupby i senere del av flyt
     df['week'] = df['timestamp'].dt.isocalendar().week.astype(str)
     df['year'] = df['timestamp'].dt.isocalendar().year.astype(str)
+    df['date'] = df['timestamp'].dt.date.astype(str)
 
     # Since unique users is misguiding us in case there is a large share of reads from service users
     df['service'] = True

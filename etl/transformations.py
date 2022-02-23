@@ -2,7 +2,6 @@ import re
 import pandas as pd
 
 
-
 def extract_tables_from_query(query):
     """
     Denne funksjonen finner og returnerer tabeller inkludert i en spørring
@@ -19,15 +18,15 @@ def extract_tables_from_query(query):
             table = re.search(regex_pattern, query)[0].strip()
             tables.append(table)
             query = query.replace(table, '')
-        except TypeError: # Which is the case when re.search returns None
+        except TypeError:  # Which is the case when re.search returns None
             matched = False
     tables = '|'.join(tables)
 
     return tables
 
 
-
-def flag_retention_observations_weekly(df, identifier_column, groupby_columns, time_column):
+def flag_observation_in_window(df, identifier_column, groupby_columns, time_column, window_days=7,
+                               forward_window=True):
     """
 
     :param df:
@@ -36,60 +35,71 @@ def flag_retention_observations_weekly(df, identifier_column, groupby_columns, t
     :param time_column:
     :return:
     """
+    df = df.copy()
     df['date'] = df[time_column].dt.date
-
-    groupby_columns = groupby_columns[::]
     groupby_columns.append(identifier_column)
-    groupby_columns.append('date')
-    df.sort_values(by=groupby_columns, ascending=False)
-    df.drop_duplicates(subset=groupby_columns, inplace=True)
-    groupby_columns.remove('date')
+    subset_duplicates = groupby_columns + ['date']
+    df.sort_values(by=time_column, inplace=True)
+    df.drop_duplicates(subset=subset_duplicates, inplace=True)
+    df['constant'] = 1
+    max_period = df[time_column].max()
 
-    # Resample to days
-    df['observation'] = 1
-    df_right = df.copy() # for merging later
-    df_right.drop(time_column, axis=1, inplace=True)
+    # In order to have correct flagging of edge-observations, that is: The last observations within a group, we must
+    # append observations n number of days forward
+    df_to_append = df.copy()
+    df_to_append.drop_duplicates(groupby_columns)
+    df_to_append[time_column] = df_to_append[time_column] + pd.Timedelta(window_days, 'days')
+    df_to_append['constant'] = None
+    df = df.append(df_to_append)
+
+    # ...and we can resample!
     df.set_index(time_column, inplace=True)
-    df = df.groupby(groupby_columns)['observation'].resample('d').sum().reset_index()
-    df.loc[df['observation'].isnull(), 'observation'] = 0
+    df = df.groupby(groupby_columns)['constant'].resample('d', origin='end').sum().reset_index()
+    if forward_window:
+        df.sort_values(time_column, ascending=False, inplace=True)
+        df.set_index(time_column, inplace=True)
+        df = df.groupby(groupby_columns)['constant'].rolling(window_days, closed='left',
+                                                             min_periods=window_days).sum().reset_index(
+            name='observations_next_window')
+    else:
+        df.sort_values(time_column, ascending=True, inplace=True)
+        df.set_index(time_column, inplace=True)
+        df = df.groupby(groupby_columns)['constant'].rolling(window_days, closed='right',
+                                                             min_periods=1).sum().reset_index(
+            name='observations_this_window')
 
-    # Flag activity in periods
-    df.sort_values(time_column, ascending=False, inplace=True)
-    df.set_index(time_column, inplace=True)
-    df = df.groupby(groupby_columns)['observation'].rolling(7, min_periods=1, closed='left').sum().reset_index()
-    df.rename({'observation': 'obs_next_window'}, axis=1, inplace=True)
-
-    # Merge and flag retention
-    merge_columns = groupby_columns + ['date']
-    df['date'] = df[time_column].dt.date
+    df = df[df[time_column] <= max_period]
+    df['date'] = df[time_column].dt.date.astype(str)
     df.drop(time_column, axis=1, inplace=True)
-    df = df.merge(df_right, on=merge_columns, how='left')
-    df[time_column] = pd.to_datetime(df['date'])
-
-    df['retention'] = 0
-    df.loc[(df['obs_next_window'] > 0) & (df['observation'] == 1), 'retention'] = 1
 
     return df
 
 
-def calculate_retention_weekly(df, identifier_column, groupby_columns, time_column):
+def calculate_retention_weekly(df, identifier_column, groupby_columns, time_column, window_days=7):
     """
-    This function calculates retention per week for the groups included in groupby_columns
 
     :param df:
     :param identifier_column:
     :param groupby_columns:
     :param time_column:
+    :param window_days:
     :return:
     """
-    df = flag_retention_observations_weekly(df, identifier_column, groupby_columns, time_column)
-    groupby_columns.append(time_column)
-    df = df.groupby(groupby_columns).sum().reset_index()
-    df.set_index(time_column, inplace=True)
-    df = df[['observation', 'retention']].rolling(7).sum().reset_index()
-    df['retention_share'] = df['retention'].div(df['observation'])
-    print(df)
+    df_forward = flag_observation_in_window(df, identifier_column, groupby_columns[::], time_column, window_days)
+    df_backward = flag_observation_in_window(df, identifier_column, groupby_columns[::], time_column, window_days,
+                                             forward_window=False)
+
+    merge_columns = [col for col in df_forward.columns if col in df_backward.columns]
+    df = df_forward.merge(df_backward, on=merge_columns, how='outer')
+
+    df.loc[df['observations_this_window'] > 1, 'observations_this_window'] = 1 # We only count one observation per window
+    df.loc[df['observations_next_window'] > 1, 'observations_next_window'] = 1
+    df = df[df['observations_this_window'] > 0]
+    groupby_columns.append('date')
+    df = df.groupby(groupby_columns)[['observations_this_window', 'observations_next_window']].sum().reset_index()
+
+    df['retention'] = df['observations_next_window'].div(df['observations_this_window'])
+    df.loc[df['observations_this_window'] == 0, 'retention'] = 0
+    df.drop(['observations_this_window', 'observations_next_window'], axis=1, inplace=True)
 
     return df
-
-
