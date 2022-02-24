@@ -2,11 +2,10 @@ import datetime
 
 import pandas as pd
 
-from transformations import calculate_retention_weekly
+from .transformations import calculate_retention_weekly
 
 
 def run_etl_to_dataproduct(groupby_columns, DESTINATION_TABLE):
-
     project_id = 'nada-dev-db2e'
     dataset = 'metrics'
     DESTINATION_DATASET = f'{project_id}.{dataset}'
@@ -37,19 +36,23 @@ def run_etl_to_dataproduct(groupby_columns, DESTINATION_TABLE):
 
     seven_days_ago = datetime.datetime.now() - pd.Timedelta(7, 'days')
 
-    df = df_main[pd.to_datetime(df_main['date']) <= seven_days_ago]
+    df_main.loc[pd.to_datetime(df_main['date']) >= seven_days_ago, 'retention'] = None
 
     load_table = f'{DESTINATION_DATASET}.{DESTINATION_TABLE}'
 
-    df.to_gbq(
+    df_main.to_gbq(
         project_id = project_id,
         destination_table=load_table,
         if_exists='replace'
     )
 
-
-
-if __name__ == '__main__':
+def run_etl_aggregate():
     run_etl_to_dataproduct([], 'plattform')
     run_etl_to_dataproduct(['source'], 'team')
     run_etl_to_dataproduct(['source', 'table'], 'dataproduct')
+
+
+
+
+if __name__ == '__main__':
+    run_etl_aggregate()

@@ -1,7 +1,7 @@
 import uuid
 import pandas as pd
 
-from transformations import extract_tables_from_query
+from .transformations import extract_tables_from_query
 
 
 def run_etl_general():
