@@ -1,0 +1,25 @@
+apiVersion: nais.io/v1
+kind: Naisjob
+metadata:
+  labels:
+    team: nada
+  name: bq-auditlogs-aggregate
+  namespace: nada
+spec:
+  image: ghcr.io/navikt/metrics_dataplatform:v6
+  schedule: "49 * * * *"
+  gcp:
+    bigQueryDatasets:
+    - cascadingDelete: false
+      description: Aggregated bigquery audit logs
+      name: bq_metrics_org
+      permission: READWRITE
+    - name: bigquery_audit_logs_org
+      permission: READ
+    permissions:
+      - resource:
+          apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+          kind: Project
+        role: roles/cloudsql.client
+  envFrom:
+    - secret: metrics-nada-creds

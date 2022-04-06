@@ -2,18 +2,18 @@ import datetime
 
 import pandas as pd
 
-from .transformations import calculate_retention_weekly
+from .transformations import calculate_retention_weekly, flag_dataproduct
 
 
 def run_etl_to_dataproduct(groupby_columns, DESTINATION_TABLE):
-    project_id = 'nada-dev-db2e'
-    dataset = 'metrics'
+    project_id = 'nada-prod-6977'
+    dataset = 'bq_metrics_org'
     DESTINATION_DATASET = f'{project_id}.{dataset}'
     read_table = f'{DESTINATION_DATASET}.stage'
 
     query = f'select * from `{read_table}`'
 
-    df = pd.read_gbq(query, project_id)
+    df = pd.read_gbq(query, project_id, location='europe-north1')
 
     df['count'] = 1
 
@@ -38,12 +38,16 @@ def run_etl_to_dataproduct(groupby_columns, DESTINATION_TABLE):
 
     df_main.loc[pd.to_datetime(df_main['date']) >= seven_days_ago, 'retention'] = None
 
+    ## Flag dataproduct
+    df.main = flag_dataproduct(df.main)
+
     load_table = f'{DESTINATION_DATASET}.{DESTINATION_TABLE}'
 
     df_main.to_gbq(
         project_id = project_id,
         destination_table=load_table,
-        if_exists='replace'
+        if_exists='replace',
+        location='europe-north1'
     )
 
 def run_etl_aggregate():

@@ -1,0 +1,4 @@
+pandas>=1.4.2
+pg8000>=1.24.1
+SQLAlchemy>=1.4.34
+pandas-gbq>=0.14.1

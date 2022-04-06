@@ -15,9 +15,9 @@ def run_etl_general():
         REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
         JSON_EXTRACT_SCALAR(protopayload_auditlog.metadataJson, '$.tableDataRead.reason') as reason,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobChange.job.jobConfig.queryConfig.query') as sql_query
-    FROM `nada-prod-6977.bigquery_audit_logs.cloudaudit_googleapis_com_data_access` 
+    FROM `nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access`
     """
-    df = pd.read_gbq(query, project_id='nada-prod-6977')
+    df = pd.read_gbq(query, project_id='nada-prod-6977', location='europe-north1')
 
     # Behandler datetimes for groupby i senere del av flyt
     df['week'] = df['timestamp'].dt.isocalendar().week.astype(str)
@@ -34,7 +34,7 @@ def run_etl_general():
     df.drop('principalEmail', axis=1, inplace=True)
 
     # Extracting the team names for the producers and the consumers
-    df['source'] = df['project_id'].str.split('-').str.get(0)
+    df['source'] = df['project_id'].str.split('-').apply(lambda x: "-".join(x[:-2]))
     df['target'] = df['job_project_id'].str.split('-').str.get(0)
 
     # For measuring the network effect: How much of the conusmption is "outside" the team?
@@ -45,8 +45,8 @@ def run_etl_general():
     df['tables_in_query'] = df['sql_query'].apply(lambda x: extract_tables_from_query(x))
 
     # Need to load the data to a staging layer
-    project_id = 'nada-dev-db2e'
-    dataset = 'metrics'
+    project_id = 'nada-prod-6977'
+    dataset = 'bq_metrics_org'
 
     DESTINATION_DATASET = f'{project_id}.{dataset}'
     destination_table = f'{DESTINATION_DATASET}.stage'
@@ -54,7 +54,8 @@ def run_etl_general():
     df.to_gbq(
         project_id = project_id,
         destination_table=destination_table,
-        if_exists='replace'
+        if_exists='replace', 
+        location='europe-north1'
     )
 
     return None
