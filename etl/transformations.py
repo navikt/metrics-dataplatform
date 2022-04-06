@@ -1,5 +1,9 @@
 import re
 import pandas as pd
+import pg8000
+import os
+import sqlalchemy
+from google.cloud.sql.connector import connector
 
 
 def extract_tables_from_query(query):
@@ -102,4 +106,47 @@ def calculate_retention_weekly(df, identifier_column, groupby_columns, time_colu
     df.loc[df['observations_this_window'] == 0, 'retention'] = 0
     df.drop(['observations_this_window', 'observations_next_window'], axis=1, inplace=True)
 
+    return df
+
+def flag_dataproduct(df):
+    """
+    Går gjennom df og lager en ny kolonne med is_dataproduct flagg
+    0 hvis raden mangler fullstendig tabellrefereranse
+    """
+
+    def getconn() -> pg8000.dbapi.Connection:
+        print(os.environ['DB_USER'])
+        conn: pg8000.dbapi.Connection = connector.connect(
+            f"{os.environ['GCP_TEAM_PROJECT_ID']}:europe-north1:nada-backend",
+            "pg8000",
+            user=f"{os.environ['DB_USER']}",
+            password=f"{os.environ['DB_PASS']}",
+            db=f"{os.environ['DB_DB']}",
+        )
+        return conn
+
+    engine = sqlalchemy.create_engine(
+        "postgresql+pg8000://",
+        creator=getconn,
+    )
+
+    df_ref = pd.read_sql("SELECT project_id, dataset, table_name FROM datasource_bigquery", engine)
+
+    engine.dispose()
+
+    table_refs = list(df_ref.project_id + '.' + df_ref.dataset + '.' + df_ref.table_name)
+
+    def is_dataproduct(p_id, ds_id, t_id):
+        try:
+            ref = p_id + '.' + ds_id + '.' + t_id
+        except TypeError:
+            # If one or more ids are None (usually dataset_id and table_id)
+            # TODO: Handle missing ids better.
+            return 0
+        if ref in table_refs:
+            return 1
+        else:
+            return 0
+    df["dataproduct_flag"] = df.apply(lambda row: is_dataproduct(row["project_id"], row["dataset_id"], row["table"]), axis=1)
+    
     return df
