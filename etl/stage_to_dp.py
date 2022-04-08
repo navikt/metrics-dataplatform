@@ -17,6 +17,10 @@ def run_etl_to_dataproduct(groupby_columns, DESTINATION_TABLE):
 
     df['count'] = 1
 
+    ##  Flag dataproduct (skip for now)
+    # TODO: Decide how to use the dataproduct flag
+    #df = flag_dataproduct(df)
+
     ## Calculating total number of reads + nunique reads + retention
     df_main = df.groupby(groupby_columns + ['date'])['identifier_anonym'].agg(['count', 'nunique']).reset_index()
     df_retention = calculate_retention_weekly(df.copy(), 'identifier_anonym', groupby_columns[::], 'timestamp')
@@ -37,9 +41,6 @@ def run_etl_to_dataproduct(groupby_columns, DESTINATION_TABLE):
     seven_days_ago = datetime.datetime.now() - pd.Timedelta(7, 'days')
 
     df_main.loc[pd.to_datetime(df_main['date']) >= seven_days_ago, 'retention'] = None
-
-    ## Flag dataproduct
-    df_main = flag_dataproduct(df_main)
 
     load_table = f'{DESTINATION_DATASET}.{DESTINATION_TABLE}'
 
