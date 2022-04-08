@@ -16,6 +16,7 @@ def run_etl_general():
         JSON_EXTRACT_SCALAR(protopayload_auditlog.metadataJson, '$.tableDataRead.reason') as reason,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobChange.job.jobConfig.queryConfig.query') as sql_query
     FROM `nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access`
+    LIMIT 1000
     """
     df = pd.read_gbq(query, project_id='nada-prod-6977', location='europe-north1')
 

@@ -6,8 +6,8 @@ metadata:
   name: bq-auditlogs-aggregate
   namespace: nada
 spec:
-  image: ghcr.io/navikt/metrics_dataplatform:v6
-  schedule: "49 * * * *"
+  image: ghcr.io/navikt/metrics_dataplatform:v10
+  schedule: "54 * * * *"
   gcp:
     bigQueryDatasets:
     - cascadingDelete: false

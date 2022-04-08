@@ -39,7 +39,7 @@ def run_etl_to_dataproduct(groupby_columns, DESTINATION_TABLE):
     df_main.loc[pd.to_datetime(df_main['date']) >= seven_days_ago, 'retention'] = None
 
     ## Flag dataproduct
-    df.main = flag_dataproduct(df.main)
+    df_main = flag_dataproduct(df_main)
 
     load_table = f'{DESTINATION_DATASET}.{DESTINATION_TABLE}'
 
