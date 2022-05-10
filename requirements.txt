@@ -1,4 +1,4 @@
 pandas>=1.4.2
-pg8000>=1.24.1
+cloud-sql-python-connector[pg8000]
 SQLAlchemy>=1.4.34
 pandas-gbq>=0.14.1
