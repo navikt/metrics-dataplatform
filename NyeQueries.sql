@@ -2,7 +2,6 @@
 SELECT 
     resource.labels.dataset_id, 
     resource.labels.project_id, 
-    SPLIT(REGEXP_EXTRACT(protopayload_auditlog.resourceName, '^projects/[^/]+/datasets/[^/]+/tables/(.*)$'), '$')[OFFSET(0)] AS table,
     protopayload_auditlog.authenticationInfo.principalEmail,
     timestamp,
     REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
@@ -20,7 +19,6 @@ AND DATE(timestamp) = "2022-05-9"
 SELECT 
     resource.labels.dataset_id, 
     resource.labels.project_id, 
-    SPLIT(REGEXP_EXTRACT(protopayload_auditlog.resourceName, '^projects/[^/]+/datasets/[^/]+/tables/(.*)$'), '$')[OFFSET(0)] AS table,
     protopayload_auditlog.authenticationInfo.principalEmail,
     timestamp,
     REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
