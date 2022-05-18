@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 import pandas as pd
 import numpy as np
+import os
 
 import pg8000
 import re
@@ -12,11 +13,11 @@ from google.cloud.sql.connector import connector
 def read_dataproducts_from_nada() -> pd.DataFrame:
     def getconn() -> pg8000.dbapi.Connection:
         conn: pg8000.dbapi.Connection = connector.connect(
-            f"instans",
+            f"nada-prod-6977:europe-north1:nada-backend",
             "pg8000",
-            user=f"bruker",
-            password=open("db_pass.txt", "r").read(),
-            db=f"nada",
+            user=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_USERNAME"],
+            password=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_PASSWORD"],
+            db=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_DATABASE"],
         )
         return conn
 
@@ -59,14 +60,15 @@ def read_audit_log_data() -> pd.DataFrame:
     WHERE protopayload_auditlog.methodName = 'google.cloud.bigquery.v2.JobService.InsertJob'
     AND protopayload_auditlog.status IS NULL
     AND JSON_VALUE(protopayload_auditlog.metadataJson,'$.jobInsertion.job.jobConfig.queryConfig.statementType') = 'SELECT'
-    AND JSON_VALUE(protopayload_auditlog.metadataJson,'$.jobInsertion.job.jobStatus.jobState') = 'DONE'
     AND DATE(timestamp) = "{yesterday}"
     """
     df_insert = pd.read_gbq(
         insert_job_query, project_id='nada-prod-6977', location='europe-north1')
+    df_insert = df_insert[~df_insert["sql_query"].isna()]
+    df_insert.drop_duplicates(subset=["job_name"], inplace=True)
 
     query_job_query = f"""
-    SELECT
+    SELECT 
         resource.labels.project_id,
         protopayload_auditlog.authenticationInfo.principalEmail,
         timestamp,
@@ -76,11 +78,12 @@ def read_audit_log_data() -> pd.DataFrame:
     FROM `nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access`
     WHERE protopayload_auditlog.methodName = 'google.cloud.bigquery.v2.JobService.Query'
     AND protopayload_auditlog.status IS NULL
-    AND JSON_VALUE(protopayload_auditlog.metadataJson,'$.jobInsertion.job.jobStatus.jobState') = 'DONE'
     AND DATE(timestamp) = "{yesterday}"
     """
     df_query = pd.read_gbq(
         query_job_query, project_id='nada-prod-6977', location='europe-north1')
+    df_query = df_query[~df_query["sql_query"].isna()]
+    df_query.drop_duplicates(subset=["job_name"], inplace=True)
 
     df_audit_raw = df_query.append(df_insert).reset_index()
     df_audit_raw.drop(columns=["index"], inplace=True)
@@ -95,15 +98,18 @@ def read_audit_log_data() -> pd.DataFrame:
             row_copy = row.copy()
             row_copy["table_uri"] = table
             df_audit = df_audit.append(row_copy)
-    df_audit.drop(columns=["tables", "table_uris",
-                  "project_id", "index"], inplace=True)
 
     df_audit = df_audit.reset_index()
+    df_audit["metabase"] = df_audit["sql_query"].apply(
+        lambda query: True if query.startswith("\"-- Metabase") else False)
     df_audit["service_account"] = df_audit["principalEmail"].apply(
         lambda email: True if ".gserviceaccount.com" in email else False)
     df_audit['week'] = df_audit['timestamp'].dt.isocalendar().week.astype(str)
     df_audit['year'] = df_audit['timestamp'].dt.isocalendar().year.astype(str)
     df_audit['date'] = df_audit['timestamp'].dt.date.astype(str)
+
+    df_audit.drop(columns=["tables", "table_uris",
+                           "project_id", "index"], inplace=True)
 
     return df_audit
 
@@ -111,16 +117,21 @@ def read_audit_log_data() -> pd.DataFrame:
 def extract_dataset_and_table(row):
     tables = []
     query = row["sql_query"]
-    regex_pattern = "(?<=FROM|JOIN|from|join)(\s`)+(\w|-|.)+?(`)+"
+    regex_pattern = "(FROM|JOIN|from|join)(\s+`?)(\w|-|`|\.)+`?"
     matched = True
     while matched:
         try:
-            table = re.search(regex_pattern, query)[0].strip()
+            table = re.search(regex_pattern, r"{}".format(query))[0].strip()
             table_orig = table
-            # noen ganger mangler prosjektid i querien
+            # noen ganger mangler prosjektid i querien, så da legges den på her
             if len(table.split(".")) < 3:
                 table = f"{row['project_id']}.{table}"
-            tables.append(table.replace("`", ""))
+            tables.append(table.replace("`", "")
+                          .replace(" ", "")
+                          .replace("FROM", "")
+                          .replace("JOIN", "")
+                          .replace("from", "")
+                          .replace("join", ""))
             query = query.replace(table_orig, '')
         except TypeError:  # Which is the case when re.search returns None
             matched = False
@@ -148,6 +159,7 @@ def merge_nada_and_audit_logs(df_nada: pd.DataFrame, df_audit: pd.DataFrame) -> 
 
     df_stage = df_stage[["user",
                          "service_account",
+                         "metabase",
                          "dataproduct_id",
                          "dataproduct",
                          "dp_created",

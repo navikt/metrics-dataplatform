@@ -1,0 +1,25 @@
+apiVersion: nais.io/v1
+kind: Naisjob
+metadata:
+  labels:
+    team: nada
+  name: 
+  namespace: nada
+spec:
+  image: {{ image }}
+  schedule: '0 8 * * *'
+  envFrom:
+    - secret: google-sql-nada-backend
+  env:
+    - name: BQ_TABLE_URI
+      value: nada-prod-6977.bq_metrics_datamarkedsplassen.stage
+  gcp:
+    bigQueryDatasets:
+    - description: Metrikker på konsum av datapakker
+      name: bq_metrics_datamarkedsplassen
+      permission: READWRITE
+    permissions:
+    - resource:
+        apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+        kind: Project
+      role: roles/cloudsql.client

@@ -10,7 +10,7 @@ spec:
   schedule: '0 6 * * *'
   env:
     - name: BQ_TABLE_URI
-      value: nada-prod-6977.bq_metrics_datamarkedsplassen.stage
+      value: nada-prod-6977.bq_metrics_datamarkedsplassen.dataproducts
   gcp:
     bigQueryDatasets:
     - description: Metrikker på konsum av datapakker

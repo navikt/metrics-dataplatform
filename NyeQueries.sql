@@ -16,7 +16,7 @@ AND JSON_VALUE(protopayload_auditlog.metadataJson,'$.jobInsertion.job.jobStatus.
 AND DATE(timestamp) = "2022-05-9"
 
 --- methodName: Query
-SELECT 
+SELECT
     resource.labels.dataset_id, 
     resource.labels.project_id, 
     protopayload_auditlog.authenticationInfo.principalEmail,
