@@ -108,7 +108,7 @@ def read_audit_log_data() -> pd.DataFrame:
     df_audit['year'] = df_audit['timestamp'].dt.isocalendar().year.astype(str)
     df_audit['date'] = df_audit['timestamp'].dt.date.astype(str)
 
-    df_audit.drop(columns=["tables", "table_uris",
+    df_audit.drop(columns=["table_uris",
                            "project_id", "index"], inplace=True)
 
     return df_audit
