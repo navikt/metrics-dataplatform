@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def dataproducts():
+if __name__ == "__main__":
     df_stage = pd.read_gbq("""SELECT user, date, table_uri, service_account, metabase, intra_team, dataproduct, source, target
     FROM nada-prod-6977.bq_metrics_datamarkedsplassen.stage""", location='europe-north1')
 

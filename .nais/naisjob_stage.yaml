@@ -7,6 +7,9 @@ metadata:
   namespace: nada
 spec:
   image: {{ image }}
+  command:
+    - python
+    - etl/alt_source_stage.py
   schedule: '0 8 * * *'
   envFrom:
     - secret: google-sql-nada-backend

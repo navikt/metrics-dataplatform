@@ -7,6 +7,9 @@ metadata:
   namespace: nada
 spec:
   image: {{ image }}
+  command:
+    - python
+    - etl/alt_source_stage.py
   schedule: '0 6 * * *'
   env:
     - name: BQ_TABLE_URI
@@ -16,8 +19,3 @@ spec:
     - description: Metrikker på konsum av datapakker
       name: bq_metrics_datamarkedsplassen
       permission: READWRITE
-    permissions:
-    - resource:
-        apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-        kind: Project
-      role: roles/cloudsql.client

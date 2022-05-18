@@ -7,4 +7,4 @@ RUN pip install -r requirements.txt
 
 USER apprunner
 
-CMD ["python", "pipeline/main.py"]
+CMD ["python", "etl/alt_source_stage.py"]
