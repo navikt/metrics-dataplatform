@@ -7,18 +7,18 @@ env:
 
 jobs:
   build:
-  runs-on: ubuntu-latest
-  needs: tests
-  steps:
-  - name: Checkout
-    uses: actions/checkout@master
-  - name: Login to GitHub Container Registry
-    uses: docker/login-action@ab80d026d4753220c4243394c07c7d80f9638d06 # Use commit-sha1 instead of tag for security concerns
-    with:
-      registry: ghcr.io
-      username: ${{ github.actor }}
-      password: ${{ secrets.GITHUB_TOKEN }}
-  - name: Build and publish Docker image
-    run: |
-      docker build . --pull --tag ${IMAGE}
-      docker push ${IMAGE}
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@ab80d026d4753220c4243394c07c7d80f9638d06 # Use commit-sha1 instead of tag for security concerns
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and publish Docker image
+      run: |
+        docker build . --pull --tag ${IMAGE}
+        docker push ${IMAGE}
