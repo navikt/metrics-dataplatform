@@ -188,7 +188,7 @@ def publish(df_stage: pd.DataFrame) -> None:
                     location='europe-north1')
 
 
-if __name__ == "__main__":
+def stage_data():
     df_nada = read_dataproducts_from_nada()
     df_audit = read_audit_log_data()
     df_stage = merge_nada_and_audit_logs(df_nada=df_nada, df_audit=df_audit)
