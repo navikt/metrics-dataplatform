@@ -5,7 +5,7 @@ from datetime import date, timedelta
 if __name__ == "__main__":
     yesterday = date.today() - timedelta(days=1)
     df_stage = pd.read_gbq(f"""SELECT user, date, table_uri, service_account, metabase, intra_team, dataproduct, source, target
-    FROM nada-prod-6977.bq_metrics_datamarkedsplassen.stage WHERE date = {yesterday}""", project_id='nada-prod-6977', location='europe-north1')
+    FROM nada-prod-6977.bq_metrics_datamarkedsplassen.stage WHERE date = '{yesterday}'""", project_id='nada-prod-6977', location='europe-north1')
 
     df_dataproducts = df_stage.groupby(["source", "table_uri", "date"])[
         "user"].agg(["count", "nunique"]).reset_index()
