@@ -10,7 +10,7 @@ spec:
   command:
     - python
     - etl/alt_stage_to_dp.py
-  schedule: '0 6 * * *'
+  schedule: '0 9 * * *'
   env:
     - name: BQ_TABLE_URI
       value: nada-prod-6977.bq_metrics_datamarkedsplassen.dataproducts

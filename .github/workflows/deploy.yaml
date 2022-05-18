@@ -21,3 +21,11 @@ jobs:
       run: |
         docker build . --pull --tag ${IMAGE}
         docker push ${IMAGE}
+  
+  deploy:
+    - name: Deploy to prod-gcp
+      uses: nais/deploy/actions/deploy@master
+      env:
+        APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+        CLUSTER: prod-gcp
+        RESOURCE: .nais/naisjob_stage.yml,.nais/naisjob_dataproducts.yml
