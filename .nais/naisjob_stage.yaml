@@ -21,6 +21,8 @@ spec:
     - description: Metrikker på konsum av datapakker
       name: bq_metrics_datamarkedsplassen
       permission: READWRITE
+    - name: bigquery_audit_logs_org
+      permission: READ
     permissions:
     - resource:
         apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
