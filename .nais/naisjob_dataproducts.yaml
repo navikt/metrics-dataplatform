@@ -3,7 +3,7 @@ kind: Naisjob
 metadata:
   labels:
     team: nada
-  name: 
+  name: datamarkedsplassen-dataprodukter
   namespace: nada
 spec:
   image: {{ image }}
