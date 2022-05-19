@@ -32,8 +32,8 @@ jobs:
       run: |
         sed -i "s~$IMAGE:.*~$IMAGE:$TAG\"~g" dags/metrikker-datamarkedsplassen.py
         git config --global user.name "$GITHUB_ACTOR"
-          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git add dags/metrikker-datamarkedsplassen.py
-          git commit -m "Updated image tag in metrikker-markedsplassen dag to ${TAG}"
-          git push
+        git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        git add dags/metrikker-datamarkedsplassen.py
+        git commit -m "Updated image tag in metrikker-markedsplassen dag to ${TAG}"
+        git push
 
