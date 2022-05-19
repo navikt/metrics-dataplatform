@@ -4,7 +4,7 @@ import kubernetes.client as k8s
 from airflow.contrib.operators import kubernetes_pod_operator
 
 TASK_MAX_RETRIES = 2
-TASK_RETRY_DELAY = timedelta = timedelta(seconds=5)
+TASK_RETRY_DELAY = timedelta(seconds=5)
 TASK_STARTUP_TIMEOUT = 360
 DELETE_POD_ON_COMPLETED = True
 IMAGE = "ghcr.io/navikt/metrics-dataplatform:3a43d6b3cce9f196272b534e2e36dc9028664232"
@@ -22,7 +22,7 @@ with DAG('metrikker-datamarkedsplassen',
         task_id="stage",
         name="stage",
         cmds=["python", "etl/source_stage.py"],
-        env_vars=envs,
+        env_vars=ENVS,
         image=IMAGE,
         retries=TASK_MAX_RETRIES,
         retry_delay=TASK_RETRY_DELAY,
@@ -34,7 +34,7 @@ with DAG('metrikker-datamarkedsplassen',
         task_id="stage",
         name="stage",
         cmds=["python", "etl/stage_to_dp.py"],
-        env_vars=envs,
+        env_vars=ENVS,
         image=IMAGE,
         retries=TASK_MAX_RETRIES,
         retry_delay=TASK_RETRY_DELAY,
