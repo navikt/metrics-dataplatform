@@ -10,6 +10,16 @@ import pandas as pd
 from google.cloud.sql.connector import connector
 
 
+def read_secrets() -> None:
+    from google.cloud import secretmanager
+    secrets = secretmanager.SecretManagerServiceClient()
+
+    resource_name = f"projects/knada-gcp/secrets/datamarkedsplassen-metrikker/versions/latest"
+    secret = secrets.access_secret_version(name=resource_name)
+    os.environ.update(dict(
+        [line.split("=") for line in secret.payload.data.decode('UTF-8').splitlines()]))
+
+
 def read_dataproducts_from_nada() -> pd.DataFrame:
     def getconn() -> pg8000.dbapi.Connection:
         conn: pg8000.dbapi.Connection = connector.connect(
@@ -189,6 +199,8 @@ def publish(df_stage: pd.DataFrame) -> None:
 
 
 if __name__ == "__main__":
+    if os.environ["COMPOSER_LAND"]:
+        read_secrets()
     df_nada = read_dataproducts_from_nada()
     df_audit = read_audit_log_data()
     df_stage = merge_nada_and_audit_logs(df_nada=df_nada, df_audit=df_audit)

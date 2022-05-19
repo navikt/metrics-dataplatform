@@ -1,6 +1,5 @@
 from airflow import DAG
 from datetime import datetime, timedelta
-import kubernetes.client as k8s
 from airflow.contrib.operators import kubernetes_pod_operator
 
 TASK_MAX_RETRIES = 2
@@ -21,7 +20,7 @@ with DAG('metrikker-datamarkedsplassen',
     stage = kubernetes_pod_operator.KubernetesPodOperator(
         task_id="stage",
         name="stage",
-        cmds=["python", "etl/source_stage.py"],
+        cmds=["python", "scripts/source_stage.py"],
         env_vars=ENVS,
         image=IMAGE,
         retries=TASK_MAX_RETRIES,
@@ -33,7 +32,7 @@ with DAG('metrikker-datamarkedsplassen',
     dataproducts = kubernetes_pod_operator.KubernetesPodOperator(
         task_id="stage",
         name="stage",
-        cmds=["python", "etl/stage_to_dp.py"],
+        cmds=["python", "scripts/stage_to_dp.py"],
         env_vars=ENVS,
         image=IMAGE,
         retries=TASK_MAX_RETRIES,
