@@ -2,3 +2,4 @@ pandas>=1.4.2
 cloud-sql-python-connector[pg8000]
 SQLAlchemy>=1.4.34
 pandas-gbq>=0.14.1
+google-cloud-secret-manager==2.10.0
