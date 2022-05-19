@@ -6,7 +6,7 @@ TASK_MAX_RETRIES = 2
 TASK_RETRY_DELAY = timedelta(seconds=5)
 TASK_STARTUP_TIMEOUT = 360
 DELETE_POD_ON_COMPLETED = True
-IMAGE = "ghcr.io/navikt/metrics-dataplatform:d1590186b634ed807c0616be4e9031d8e03d7a04"
+IMAGE = "ghcr.io/navikt/metrics-dataplatform:3938e35a8da342b91adc7463c88b302d2ccab731"
 ENVS = {
     "COMPOSER_LAND": "true"
 }
