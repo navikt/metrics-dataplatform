@@ -3,7 +3,8 @@ name: Deploy metrics dataproduct pipeline
 on: push
 
 env:
-  IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
+  IMAGE: ghcr.io/${{ github.repository }}
+  TAG: ${{ github.sha }}
 
 jobs:
   build:
@@ -19,11 +20,20 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build and publish Docker image
       run: |
-        docker build . --pull --tag ${IMAGE}
-        docker push ${IMAGE}
-    - name: Deploy to prod-gcp
-      uses: nais/deploy/actions/deploy@master
-      env:
-        APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-        CLUSTER: prod-gcp
-        RESOURCE: .nais/naisjob_stage.yaml,.nais/naisjob_dataproducts.yaml
+        docker build . --pull --tag ${IMAGE}:${TAG}
+        docker push ${IMAGE}:${TAG}
+#    - name: Deploy to prod-gcp
+#      uses: nais/deploy/actions/deploy@master
+#      env:
+#        APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+#        CLUSTER: prod-gcp
+#        RESOURCE: .nais/naisjob_stage.yaml,.nais/naisjob_dataproducts.yaml
+    - name: Edit image tag in dag file
+      run: |
+        sed -i "s~$IMAGE:.*~$IMAGE:$TAG\"~g" dags/metrikker-datamarkedsplassen.py
+        git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git add dags/metrikker-datamarkedsplassen.py
+          git commit -m "Updated image tag in metrikker-markedsplassen dag to ${TAG}"
+          git push
+
