@@ -12,7 +12,7 @@ ENVS = {
 }
 
 with DAG('metrikker-datamarkedsplassen',
-         start_date=datetime(year=2022, month=2, day=26, hour=14),
+         start_date=datetime(year=2022, month=5, day=20),
          schedule_interval="0 5 * * *",
          max_active_runs=1,
          catchup=False) as dag:
