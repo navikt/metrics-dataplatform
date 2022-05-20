@@ -30,8 +30,8 @@ with DAG('metrikker-datamarkedsplassen',
     )
 
     dataproducts = kubernetes_pod_operator.KubernetesPodOperator(
-        task_id="stage",
-        name="stage",
+        task_id="dataproducts",
+        name="dataproducts",
         cmds=["python", "scripts/stage_to_dp.py"],
         env_vars=ENVS,
         image=IMAGE,
