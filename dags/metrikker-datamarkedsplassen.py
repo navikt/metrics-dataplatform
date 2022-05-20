@@ -33,7 +33,7 @@ with DAG('metrikker-datamarkedsplassen',
         retry_delay=TASK_RETRY_DELAY,
         namespace="composer-2-0-13-airflow-2-2-5-3b8c2b10",
         startup_timeout_seconds=TASK_STARTUP_TIMEOUT,
-        is_delete_operator_pod=False,
+        is_delete_operator_pod=DELETE_POD_ON_COMPLETED,
     )
 
     dataproducts = kubernetes_pod_operator.KubernetesPodOperator(
