@@ -9,7 +9,7 @@ TASK_MAX_RETRIES = 2
 TASK_RETRY_DELAY = timedelta(seconds=5)
 TASK_STARTUP_TIMEOUT = 360
 DELETE_POD_ON_COMPLETED = True
-IMAGE = "navikt/nada-metrics:acb0e05f5d3e4a579eeb26bbcaee432eeb602fe8"
+IMAGE = "navikt/nada-metrics:01836abe1bed9443651e2263d0597a2832faecc9"
 ENVS = {
     "COMPOSER_LAND": "true",
     "GCP_PROJECT": "nada-prod-6977",
