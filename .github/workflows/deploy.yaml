@@ -21,12 +21,6 @@ jobs:
       run: |
         docker build . --pull --tag ${IMAGE}:${TAG}
         docker push ${IMAGE}:${TAG}
-#    - name: Deploy to prod-gcp
-#      uses: nais/deploy/actions/deploy@master
-#      env:
-#        APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-#        CLUSTER: prod-gcp
-#        RESOURCE: .nais/naisjob_stage.yaml,.nais/naisjob_dataproducts.yaml
     - name: Edit image tag in dag file
       run: |
         sed -i "s~$IMAGE:.*~$IMAGE:$TAG\"~g" dags/metrikker-datamarkedsplassen.py
