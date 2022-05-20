@@ -12,7 +12,7 @@ ENVS = {
     "GCP_PROJECT": "nada-prod-6977",
     "GSM_SECRET": "datamarkedsplassen-metrikker",
     "CLOUD_SQL_INSTANCE": "nada-backend",
-    "AUDIT_LOG_TABLE": "nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_acces",
+    "AUDIT_LOG_TABLE": "nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access",
     "STAGE_TABLE": "nada-prod-6977.bq_metrics_datamarkedsplassen.stage",
     "DATAPRODUCTS_TABLE": "nada-prod-6977.bq_metrics_datamarkedsplassen.dataproducts"
 }
