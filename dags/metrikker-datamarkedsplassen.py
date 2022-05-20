@@ -26,7 +26,7 @@ with DAG('metrikker-datamarkedsplassen',
         retries=TASK_MAX_RETRIES,
         retry_delay=TASK_RETRY_DELAY,
         startup_timeout_seconds=TASK_STARTUP_TIMEOUT,
-        is_delete_operator_pod=DELETE_POD_ON_COMPLETED,
+        is_delete_operator_pod=False,
     )
 
     dataproducts = kubernetes_pod_operator.KubernetesPodOperator(
