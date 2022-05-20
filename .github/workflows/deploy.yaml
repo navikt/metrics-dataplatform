@@ -35,12 +35,10 @@ jobs:
         git add dags/metrikker-datamarkedsplassen.py
         git commit -m "Updated image tag in metrikker-markedsplassen dag to ${TAG}"
         git push
-    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+    - uses: google-github-actions/auth@v0
       with:
-        service_account_key: ${{ secrets.GCS_CREDS }}
-        project_id: nada-prod-6977
-        export_default_credentials: true
+        credentials_json: ${{ secrets.GCS_CREDS }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
     - name: Upload to composer bucket
       run: gsutil cp -r dags gs://europe-west1-nada-3b8c2b10-bucket
-      
-
