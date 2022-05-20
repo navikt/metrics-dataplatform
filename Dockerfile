@@ -2,8 +2,10 @@ FROM navikt/python:3.8
 
 USER root
 
-COPY . .
+COPY requirements.txt .
 RUN pip install -r requirements.txt
+
+COPY scripts scripts/
 
 USER apprunner
 

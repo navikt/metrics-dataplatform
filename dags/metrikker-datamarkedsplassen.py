@@ -6,9 +6,15 @@ TASK_MAX_RETRIES = 2
 TASK_RETRY_DELAY = timedelta(seconds=5)
 TASK_STARTUP_TIMEOUT = 360
 DELETE_POD_ON_COMPLETED = True
-IMAGE = "ghcr.io/navikt/metrics-dataplatform:1db4bcfda4fb7e196a5c3223c51a1e622ad29683"
+IMAGE = "navikt/nada-metrics:v1"
 ENVS = {
-    "COMPOSER_LAND": "true"
+    "COMPOSER_LAND": "true",
+    "GCP_PROJECT": "nada-prod-6977",
+    "GSM_SECRET": "datamarkedsplassen-metrikker",
+    "CLOUD_SQL_INSTANCE": "nada-backend",
+    "AUDIT_LOG_TABLE": "nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_acces",
+    "STAGE_TABLE": "nada-prod-6977.bq_metrics_datamarkedsplassen.stage",
+    "DATAPRODUCTS_TABLE": "nada-prod-6977.bq_metrics_datamarkedsplassen.dataproducts"
 }
 
 with DAG('metrikker-datamarkedsplassen',

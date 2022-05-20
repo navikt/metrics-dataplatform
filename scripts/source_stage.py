@@ -14,7 +14,7 @@ def read_secrets() -> None:
     from google.cloud import secretmanager
     secrets = secretmanager.SecretManagerServiceClient()
 
-    resource_name = f"projects/knada-gcp/secrets/datamarkedsplassen-metrikker/versions/latest"
+    resource_name = f"projects/{os.environ['GCP_PROJECT']}/secrets/{os.environ['GSM_SECRET']}/versions/latest"
     secret = secrets.access_secret_version(name=resource_name)
     os.environ.update(dict(
         [line.split("=") for line in secret.payload.data.decode('UTF-8').splitlines()]))
@@ -23,7 +23,7 @@ def read_secrets() -> None:
 def read_dataproducts_from_nada() -> pd.DataFrame:
     def getconn() -> pg8000.dbapi.Connection:
         conn: pg8000.dbapi.Connection = connector.connect(
-            f"nada-prod-6977:europe-north1:nada-backend",
+            f"{os.environ['GCP_PROJECT']}:europe-north1:{os.environ['CLOUD_SQL_INSTANCE']}",
             "pg8000",
             user=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_USERNAME"],
             password=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_PASSWORD"],
@@ -66,14 +66,14 @@ def read_audit_log_data() -> pd.DataFrame:
         REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobConfig.queryConfig.query') as sql_query,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobName') as job_name,
-    FROM `nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access`
+    FROM `{os.environ["AUDIT_LOG_TABLE"]}`
     WHERE protopayload_auditlog.methodName = 'google.cloud.bigquery.v2.JobService.InsertJob'
     AND protopayload_auditlog.status IS NULL
     AND JSON_VALUE(protopayload_auditlog.metadataJson,'$.jobInsertion.job.jobConfig.queryConfig.statementType') = 'SELECT'
     AND DATE(timestamp) = "{yesterday}"
     """
     df_insert = pd.read_gbq(
-        insert_job_query, project_id='nada-prod-6977', location='europe-north1')
+        insert_job_query, project_id=os.environ["GCP_PROJECT"], location='europe-north1')
     df_insert = df_insert[~df_insert["sql_query"].isna()]
     df_insert.drop_duplicates(subset=["job_name"], inplace=True)
 
@@ -85,13 +85,13 @@ def read_audit_log_data() -> pd.DataFrame:
         REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobConfig.queryConfig.query') as sql_query,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobName') as job_name,
-    FROM `nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access`
+    FROM `{os.environ["AUDIT_LOG_TABLE"]}`
     WHERE protopayload_auditlog.methodName = 'google.cloud.bigquery.v2.JobService.Query'
     AND protopayload_auditlog.status IS NULL
     AND DATE(timestamp) = "{yesterday}"
     """
     df_query = pd.read_gbq(
-        query_job_query, project_id='nada-prod-6977', location='europe-north1')
+        query_job_query, project_id=os.environ["GCP_PROJECT"], location='europe-north1')
     df_query = df_query[~df_query["sql_query"].isna()]
     df_query.drop_duplicates(subset=["job_name"], inplace=True)
 
@@ -192,8 +192,8 @@ def merge_nada_and_audit_logs(df_nada: pd.DataFrame, df_audit: pd.DataFrame) -> 
 
 
 def publish(df_stage: pd.DataFrame) -> None:
-    df_stage.to_gbq(project_id="nada-prod-6977",
-                    destination_table="nada-prod-6977.bq_metrics_datamarkedsplassen.stage",
+    df_stage.to_gbq(project_id=os.environ["GCP_PROJECT"],
+                    destination_table=os.environ["STAGE_TABLE"],
                     if_exists='append',
                     location='europe-north1')
 
