@@ -56,7 +56,7 @@ def read_dataproducts_from_nada() -> pd.DataFrame:
 
 
 def read_audit_log_data() -> pd.DataFrame:
-    yesterday = date.today() - timedelta(days=1)
+    yesterday = date.today()  # - timedelta(days=1)
 
     insert_job_query = f"""
     SELECT
