@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 
 if __name__ == "__main__":
-    yesterday = date.today()
+    yesterday = date.today() - timedelta(days=1)
     df_stage = pd.read_gbq(f"""SELECT user, date, table_uri, service_account, metabase, intra_team, dataproduct, source, target
     FROM {os.environ['STAGE_TABLE']} WHERE date = '{yesterday}'""", project_id=os.environ["GCP_PROJECT"], location='europe-north1')
 
