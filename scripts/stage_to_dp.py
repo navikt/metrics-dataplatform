@@ -1,12 +1,16 @@
 import os
 import pandas as pd
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 
 
 if __name__ == "__main__":
     yesterday = date.today() - timedelta(days=1)
-    df_stage = pd.read_gbq(f"""SELECT user, date, table_uri, service_account, metabase, intra_team, dataproduct, source, target
+    df_stage = pd.read_gbq(f"""SELECT user, query_timestamp, table_uri, service_account, metabase, intra_team, dataproduct, source, target
     FROM {os.environ['STAGE_TABLE']} WHERE date = '{yesterday}'""", project_id=os.environ["GCP_PROJECT"], location='europe-north1')
+
+    df_stage["date"] = df_stage["query_timestamp"].apply(
+        lambda t: datetime.combine(t.date(), datetime.min.time()))
+    df_stage.drop(columns=["query_timestamp"], inplace=True)
 
     df_dataproducts = df_stage.groupby(["source", "table_uri", "date"])[
         "user"].agg(["count", "nunique"]).reset_index()
