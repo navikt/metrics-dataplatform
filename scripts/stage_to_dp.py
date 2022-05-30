@@ -29,6 +29,8 @@ if __name__ == "__main__":
 
         df_dataproducts = df_dataproducts.merge(
             df_temp, how='left', on=groupby_temp)
+        
+    df_dataproducts.fillna(0)
 
     df_dataproducts.to_gbq(project_id=os.environ['GCP_PROJECT'],
                            destination_table=os.environ["DATAPRODUCTS_TABLE"],
