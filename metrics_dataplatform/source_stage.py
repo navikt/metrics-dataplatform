@@ -51,7 +51,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
         REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobConfig.queryConfig.query') as sql_query,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobName') as job_name,
-    FROM `{os.environ["SOURCE_AUDIT_LOG_TABLE"]}`
+    FROM `{os.environ["SOURCE_AUDIT_LOGS_TABLE"]}`
     WHERE protopayload_auditlog.methodName = 'google.cloud.bigquery.v2.JobService.InsertJob'
     AND protopayload_auditlog.status IS NULL
     AND JSON_VALUE(protopayload_auditlog.metadataJson,'$.jobInsertion.job.jobConfig.queryConfig.statementType') = 'SELECT'
@@ -70,7 +70,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
         REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobConfig.queryConfig.query') as sql_query,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobName') as job_name,
-    FROM `{os.environ["SOURCE_AUDIT_LOG_TABLE"]}`
+    FROM `{os.environ["SOURCE_AUDIT_LOGS_TABLE"]}`
     WHERE protopayload_auditlog.methodName = 'google.cloud.bigquery.v2.JobService.Query'
     AND protopayload_auditlog.status IS NULL
     AND DATE(timestamp) BETWEEN {time_range}
