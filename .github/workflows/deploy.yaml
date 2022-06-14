@@ -3,7 +3,7 @@ name: Deploy metrics dataproduct pipeline
 on: push
 
 env:
-  IMAGE: IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
+  IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
 jobs:
   build:
