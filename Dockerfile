@@ -9,4 +9,4 @@ COPY scripts scripts/
 
 USER apprunner
 
-CMD ["python", "etl/alt_source_stage.py"]
+CMD ["python", "main.py"]

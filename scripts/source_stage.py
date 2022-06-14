@@ -1,6 +1,4 @@
-from datetime import date, timedelta
 import pandas as pd
-import numpy as np
 import os
 
 import pg8000
@@ -10,20 +8,10 @@ import pandas as pd
 from google.cloud.sql.connector import connector
 
 
-def read_secrets() -> None:
-    from google.cloud import secretmanager
-    secrets = secretmanager.SecretManagerServiceClient()
-
-    resource_name = f"projects/{os.environ['GCP_PROJECT']}/secrets/{os.environ['GSM_SECRET']}/versions/latest"
-    secret = secrets.access_secret_version(name=resource_name)
-    os.environ.update(dict(
-        [line.split("=") for line in secret.payload.data.decode('UTF-8').splitlines()]))
-
-
 def read_dataproducts_from_nada() -> pd.DataFrame:
     def getconn() -> pg8000.dbapi.Connection:
         conn: pg8000.dbapi.Connection = connector.connect(
-            f"{os.environ['GCP_PROJECT']}:europe-north1:{os.environ['CLOUD_SQL_INSTANCE']}",
+            f"{os.environ['GCP_TEAM_PROJECT_ID']}:europe-north1:{os.environ['CLOUD_SQL_INSTANCE']}",
             "pg8000",
             user=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_USERNAME"],
             password=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_PASSWORD"],
@@ -55,9 +43,7 @@ def read_dataproducts_from_nada() -> pd.DataFrame:
     return df_nada
 
 
-def read_audit_log_data() -> pd.DataFrame:
-    yesterday = date.today() - timedelta(days=1)
-
+def read_audit_log_data(time_range) -> pd.DataFrame:
     insert_job_query = f"""
     SELECT
         resource.labels.project_id,
@@ -70,10 +56,10 @@ def read_audit_log_data() -> pd.DataFrame:
     WHERE protopayload_auditlog.methodName = 'google.cloud.bigquery.v2.JobService.InsertJob'
     AND protopayload_auditlog.status IS NULL
     AND JSON_VALUE(protopayload_auditlog.metadataJson,'$.jobInsertion.job.jobConfig.queryConfig.statementType') = 'SELECT'
-    AND DATE(timestamp) = "{yesterday}"
+    AND DATE(timestamp) BETWEEN {time_range}
     """
     df_insert = pd.read_gbq(
-        insert_job_query, project_id=os.environ["GCP_PROJECT"], location='europe-north1')
+        insert_job_query, project_id=os.environ["GCP_TEAM_PROJECT_ID"], location='europe-north1')
     df_insert = df_insert[~df_insert["sql_query"].isna()]
     df_insert.drop_duplicates(subset=["job_name"], inplace=True)
 
@@ -88,10 +74,10 @@ def read_audit_log_data() -> pd.DataFrame:
     FROM `{os.environ["AUDIT_LOG_TABLE"]}`
     WHERE protopayload_auditlog.methodName = 'google.cloud.bigquery.v2.JobService.Query'
     AND protopayload_auditlog.status IS NULL
-    AND DATE(timestamp) = "{yesterday}"
+    AND DATE(timestamp) BETWEEN {time_range}
     """
     df_query = pd.read_gbq(
-        query_job_query, project_id=os.environ["GCP_PROJECT"], location='europe-north1')
+        query_job_query, project_id=os.environ["GCP_TEAM_PROJECT_ID"], location='europe-north1')
     df_query = df_query[~df_query["sql_query"].isna()]
     df_query.drop_duplicates(subset=["job_name"], inplace=True)
 
@@ -192,16 +178,16 @@ def merge_nada_and_audit_logs(df_nada: pd.DataFrame, df_audit: pd.DataFrame) -> 
 
 
 def publish(df_stage: pd.DataFrame) -> None:
-    df_stage.to_gbq(project_id=os.environ["GCP_PROJECT"],
+    df_stage.to_gbq(project_id=os.environ["GCP_TEAM_PROJECT_ID"],
                     destination_table=os.environ["STAGE_TABLE"],
                     if_exists='append',
                     location='europe-north1')
 
+    print(f"Uploaded {len(df_stage)} rows to {os.environ['STAGE_TABLE']}")
 
-if __name__ == "__main__":
-    if os.environ["COMPOSER_LAND"]:
-        read_secrets()
+
+def run_source_stage(time_range: str):
     df_nada = read_dataproducts_from_nada()
-    df_audit = read_audit_log_data()
+    df_audit = read_audit_log_data(time_range)
     df_stage = merge_nada_and_audit_logs(df_nada=df_nada, df_audit=df_audit)
     publish(df_stage)

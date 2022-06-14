@@ -21,18 +21,9 @@ jobs:
       run: |
         docker build . --pull --tag ${IMAGE}:${TAG}
         docker push ${IMAGE}:${TAG}
-    - name: Edit image tag in dag file
-      run: |
-        sed -i "s~$IMAGE:.*~$IMAGE:$TAG\"~g" dags/metrikker-datamarkedsplassen.py
-        git config --global user.name "$GITHUB_ACTOR"
-        git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
-        git add dags/metrikker-datamarkedsplassen.py
-        git commit -m "Updated image tag in metrikker-markedsplassen dag to ${TAG}"
-        git push
-    - uses: google-github-actions/auth@v0
-      with:
-        credentials_json: ${{ secrets.GCS_CREDS }}
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0
-    - name: Upload to composer bucket
-      run: gsutil cp -r dags gs://europe-west1-nada-3b8c2b10-bucket
+    - name: Deploy to prod-gcp
+      uses: nais/deploy/actions/deploy@master
+      env:
+        APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+        CLUSTER: prod-gcp
+        RESOURCE: .nais/naisjob.yaml

@@ -1,0 +1,33 @@
+apiVersion: nais.io/v1
+kind: Naisjob
+metadata:
+  labels:
+    team: nada
+  name: 
+  namespace: nada
+spec:
+  image: {{ image }}
+  schedule: '0 8 * * *'
+  envFrom:
+    - secret: google-sql-nada-backend
+  env:
+    - name: SOURCE_AUDIT_LOGS_TABLE
+      value: nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access
+    - name: STAGE_TABLE
+      value: nada-prod-6977.bq_metrics_datamarkedsplassen.stage
+    - name: DATAPRODUCTS_TABLE
+      value: nada-prod-6977.bq_metrics_datamarkedsplassen.dataproducts
+    - name: CLOUD_SQL_INSTANCE
+      value: nada-backend
+  gcp:
+    bigQueryDatasets:
+    - description: Metrikker på konsum av dataprodukter
+      name: bq_metrics_datamarkedsplassen
+      permission: READWRITE
+    - name: bigquery_audit_logs_org
+      permission: READ
+    permissions:
+    - resource:
+        apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+        kind: Project
+      role: roles/cloudsql.client

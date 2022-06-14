@@ -1,12 +1,11 @@
 import os
 import pandas as pd
-from datetime import datetime, date, timedelta
+from datetime import datetime
 
 
-if __name__ == "__main__":
-    yesterday = date.today() - timedelta(days=1)
+def run_stage_to_dp(time_range: str):
     df_stage = pd.read_gbq(f"""SELECT user, query_timestamp, table_uri, service_account, metabase, intra_team, dataproduct, source, target
-    FROM {os.environ['STAGE_TABLE']} WHERE date = '{yesterday}'""", project_id=os.environ["GCP_PROJECT"], location='europe-north1')
+    FROM {os.environ['STAGE_TABLE']} WHERE date BETWEEN {time_range}""", project_id=os.environ["GCP_TEAM_PROJECT_ID"], location='europe-north1')
 
     df_stage["date"] = df_stage["query_timestamp"].apply(
         lambda t: datetime.combine(t.date(), datetime.min.time()))
@@ -30,7 +29,10 @@ if __name__ == "__main__":
         df_dataproducts = df_dataproducts.merge(
             df_temp, how='left', on=groupby_temp)
 
-    df_dataproducts.to_gbq(project_id=os.environ['GCP_PROJECT'],
+    df_dataproducts.to_gbq(project_id=os.environ['GCP_TEAM_PROJECT_ID'],
                            destination_table=os.environ["DATAPRODUCTS_TABLE"],
                            if_exists='append',
                            location='europe-north1')
+
+    print(
+        f"Uploaded {len(df_dataproducts)} rows to {os.environ['DATAPRODUCTS_TABLE']}")
