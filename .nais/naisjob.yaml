@@ -14,9 +14,9 @@ spec:
     - name: SOURCE_AUDIT_LOGS_TABLE
       value: nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access
     - name: STAGE_TABLE
-      value: {{ stage_table }}
+      value: {{stage_table}}
     - name: DATAPRODUCTS_TABLE
-      value: {{ dp_table }}
+      value: {{dp_table}}
     - name: CLOUD_SQL_INSTANCE
       value: nada-backend
     - name: NADA_BACKEND_URL

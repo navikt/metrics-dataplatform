@@ -1,0 +1,20 @@
+apiVersion: nais.io/v1
+kind: Alert
+metadata:
+  name: metrics-markedsplassen
+  namespace: nada
+  labels:
+    team: nada
+    app: metrics-markedsplassen
+spec:
+  receivers:
+    slack:
+      channel: '#nada-alerts'
+      prependText: '<!here> | '
+  alerts:
+    - alert: Naisjob feiler
+      description: Naisjob metrics-markedsplassen feiler i namespace nada
+      expr: 'kube_job_failed{job_name=~"^metrics-markedsplassen.*", namespace="nada"} > 0'
+      for: 1m
+      action: "Se logger på https://logs.adeo.no -> søk etter `pod:metrics-markedsplassen* AND namespace:nada`, repo: https://github.com/navikt/metrics-markedsplassen"
+      severity: danger
