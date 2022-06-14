@@ -11,7 +11,7 @@ def run_stage_to_dp(time_range: str):
         lambda t: datetime.combine(t.date(), datetime.min.time()))
     df_stage.drop(columns=["query_timestamp"], inplace=True)
 
-    df_dataproducts = df_stage.groupby(["source", "table_uri", "date"])[
+    df_dataproducts = df_stage.groupby(["source", "table_uri", "date", "dataproduct", "dataproduct_id"])[
         "user"].agg(["count", "nunique"]).reset_index()
 
     # Calculating share of unique consumers coming from same team as producers, share of service-users and share of metabase users
@@ -28,6 +28,8 @@ def run_stage_to_dp(time_range: str):
 
         df_dataproducts = df_dataproducts.merge(
             df_temp, how='left', on=groupby_temp)
+        
+    df_dataproducts.fillna(0, inplace=True)
 
     df_dataproducts.to_gbq(project_id=os.environ['GCP_TEAM_PROJECT_ID'],
                            destination_table=os.environ["DATAPRODUCTS_TABLE"],
