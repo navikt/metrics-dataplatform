@@ -1,0 +1,2 @@
+stage_table: nada-prod-6977.bq_metrics_datamarkedsplassen.stage
+dp_table: nada-prod-6977.bq_metrics_datamarkedsplassen.dataproducts
