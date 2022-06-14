@@ -4,7 +4,6 @@ import os
 import pg8000
 import re
 import sqlalchemy
-import pandas as pd
 from google.cloud.sql.connector import connector
 
 

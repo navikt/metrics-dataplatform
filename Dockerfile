@@ -1,12 +1,13 @@
-FROM navikt/python:3.8
+FROM python:3.9.1-buster
 
-USER root
-
+RUN pip install --upgrade pip
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY scripts scripts/
+WORKDIR /app/metrics_dataplattform
+COPY metrics_dataplatform .
 
-USER apprunner
+RUN groupadd --system --gid 1069 apprunner
+RUN useradd --system --uid 1069 --gid apprunner apprunner
 
 CMD ["python", "main.py"]
