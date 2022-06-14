@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 def run_stage_to_dp(time_range: str):
-    df_stage = pd.read_gbq(f"""SELECT user, query_timestamp, table_uri, service_account, metabase, intra_team, dataproduct, source, target
+    df_stage = pd.read_gbq(f"""SELECT user, query_timestamp, table_uri, service_account, metabase, intra_team, dataproduct, source, target, dataproduct_id
     FROM {os.environ['STAGE_TABLE']} WHERE date BETWEEN {time_range}""", project_id=os.environ["GCP_TEAM_PROJECT_ID"], location='europe-north1')
 
     df_stage["date"] = df_stage["query_timestamp"].apply(
@@ -28,7 +28,7 @@ def run_stage_to_dp(time_range: str):
 
         df_dataproducts = df_dataproducts.merge(
             df_temp, how='left', on=groupby_temp)
-        
+
     df_dataproducts.fillna(0, inplace=True)
 
     df_dataproducts.to_gbq(project_id=os.environ['GCP_TEAM_PROJECT_ID'],
