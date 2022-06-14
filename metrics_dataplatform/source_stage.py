@@ -1,46 +1,7 @@
 import pandas as pd
 import os
 import re
-import requests
-
-
-def read_dataproducts_from_nada() -> pd.DataFrame:
-    dps = []
-    offset = 0
-    limit = 15
-    done = False
-    while not done:
-        query = """query ($limit: Int, $offset: Int){
-            dataproducts(limit: $limit, offset: $offset){
-            id
-            name
-            datasource{
-            ...on BigQuery{
-                projectID
-                dataset
-                table
-                created
-            }
-            }
-        }
-        }"""
-
-        res = requests.post(os.environ["NADA_BACKEND_URL"],
-                            json={"query": query, "variables": {"limit": limit, "offset": offset}})
-        res.raise_for_status()
-
-        new = res.json()["data"]["dataproducts"]
-        if len(new) == 0:
-            done = True
-        else:
-            dps += new
-            offset += limit
-
-    df_nada = pd.DataFrame.from_dict(dps)
-    df_nada["table_uri"] = df_nada.apply(
-        lambda row: f"{row['project_id']}.{row['dataset']}.{row['table_name']}", axis=1)
-
-    return df_nada
+from nada_backend import read_dataproducts_from_nada
 
 
 def read_audit_log_data(time_range) -> pd.DataFrame:

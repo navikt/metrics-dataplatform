@@ -32,8 +32,3 @@ spec:
       permission: READWRITE
     - name: bigquery_audit_logs_org
       permission: READ
-    permissions:
-    - resource:
-        apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-        kind: Project
-      role: roles/cloudsql.client
