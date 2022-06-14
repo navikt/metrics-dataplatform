@@ -7,7 +7,10 @@ def find_next_upload_date(table_uri: str):
     last_uploaded_date = pd.read_gbq(f"""SELECT max(date) as date FROM `{table_uri}`""",
                                      project_id=os.environ["GCP_TEAM_PROJECT_ID"],
                                      location="europe-north1")
-    return datetime.strptime(last_uploaded_date.iloc[0]["date"], "%Y-%m-%d").date() + timedelta(days=1)
+    try:
+        return datetime.strptime(last_uploaded_date.iloc[0]["date"], "%Y-%m-%d").date() + timedelta(days=1)
+    except TypeError:
+        return last_uploaded_date.iloc[0]["date"].to_pydatetime().date() + timedelta(days=1)
 
 
 def determine_time_range(table_uri: str) -> str:
