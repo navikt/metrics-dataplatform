@@ -19,6 +19,12 @@ spec:
       value: {{ dp_table }}
     - name: CLOUD_SQL_INSTANCE
       value: nada-backend
+    - name: NADA_BACKEND_URL
+      value: http://nada-backend/api/query
+  accessPolicy:
+    outbound:
+      rules:
+        - application: nada-backend
   gcp:
     bigQueryDatasets:
     - description: Metrikker på konsum av dataprodukter

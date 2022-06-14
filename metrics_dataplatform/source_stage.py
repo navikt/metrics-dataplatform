@@ -1,41 +1,42 @@
 import pandas as pd
 import os
-
-import pg8000
 import re
-import sqlalchemy
-from google.cloud.sql.connector import connector
+import requests
 
 
 def read_dataproducts_from_nada() -> pd.DataFrame:
-    def getconn() -> pg8000.dbapi.Connection:
-        conn: pg8000.dbapi.Connection = connector.connect(
-            f"{os.environ['GCP_TEAM_PROJECT_ID']}:europe-north1:{os.environ['CLOUD_SQL_INSTANCE']}",
-            "pg8000",
-            user=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_USERNAME"],
-            password=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_PASSWORD"],
-            db=os.environ["NAIS_DATABASE_NADA_BACKEND_NADA_DATABASE"],
-        )
-        return conn
+    dps = []
+    offset = 0
+    limit = 15
+    done = False
+    while not done:
+        query = """query ($limit: Int, $offset: Int){
+            dataproducts(limit: $limit, offset: $offset){
+            id
+            name
+            datasource{
+            ...on BigQuery{
+                projectID
+                dataset
+                table
+                created
+            }
+            }
+        }
+        }"""
 
-    engine = sqlalchemy.create_engine(
-        "postgresql+pg8000://",
-        creator=getconn,
-    )
+        res = requests.post(os.environ["NADA_BACKEND_URL"],
+                            json={"query": query, "variables": {"limit": limit, "offset": offset}})
+        res.raise_for_status()
 
-    df_dp = pd.read_sql("SELECT id, name FROM dataproducts", engine)
+        new = res.json()["data"]["dataproducts"]
+        if len(new) == 0:
+            done = True
+        else:
+            dps += new
+            offset += limit
 
-    df_dp.rename(columns={
-        "id": "dataproduct_id",
-        "name": "dataproduct"
-    }, inplace=True)
-
-    df_ds = pd.read_sql(
-        "SELECT dataproduct_id, project_id, dataset, created, table_name FROM datasource_bigquery", engine)
-
-    engine.dispose()
-
-    df_nada = df_dp.merge(df_ds, on="dataproduct_id")
+    df_nada = pd.DataFrame.from_dict(dps)
     df_nada["table_uri"] = df_nada.apply(
         lambda row: f"{row['project_id']}.{row['dataset']}.{row['table_name']}", axis=1)
 
