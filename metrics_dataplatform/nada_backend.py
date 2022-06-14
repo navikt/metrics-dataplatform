@@ -8,8 +8,8 @@ def unpack(dp: dict):
     dp["dataproduct"] = dp.pop("name")
     dp["project_id"] = dp["datasource"]["projectID"]
     dp["dataset"] = dp["datasource"]["dataset"]
-    dp["table_name"] = dp["datasource"]["table"]
     dp["created"] = dp["datasource"]["created"]
+    dp["table_name"] = dp["datasource"]["table"]
     del dp["datasource"]
     return dp
 
@@ -28,8 +28,8 @@ def read_dataproducts_from_nada() -> pd.DataFrame:
             ...on BigQuery{
                 projectID
                 dataset
-                table
                 created
+                table
             }
             }
         }
