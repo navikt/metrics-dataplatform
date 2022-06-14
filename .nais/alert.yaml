@@ -16,5 +16,5 @@ spec:
       description: Naisjob metrics-markedsplassen feiler i namespace nada
       expr: 'kube_job_failed{job_name=~"^metrics-markedsplassen.*", namespace="nada"} > 0'
       for: 1m
-      action: "Se logger på https://logs.adeo.no -> søk etter `pod:metrics-markedsplassen* AND namespace:nada`, repo: https://github.com/navikt/metrics-markedsplassen"
+      action: "Se logger på https://logs.adeo.no -> søk etter `pod:metrics-markedsplassen* AND namespace:nada`, repo: https://github.com/navikt/metrics-dataplatform"
       severity: danger

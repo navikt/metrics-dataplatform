@@ -8,6 +8,10 @@ metadata:
 spec:
   image: {{ image }}
   schedule: '0 8 * * *'
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  backoffLimit: 2
+  concurrencyPolicy: Forbid
   envFrom:
     - secret: google-sql-nada-backend
   env:
