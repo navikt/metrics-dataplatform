@@ -1,7 +1,7 @@
 import os
-from scripts.source_stage import run_source_stage
-from scripts.stage_to_dp import run_stage_to_dp
-from scripts.util import determine_time_range
+from src.source_stage import run_source_stage
+from src.stage_to_dp import run_stage_to_dp
+from src.util import determine_time_range
 
 
 if __name__ == "__main__":

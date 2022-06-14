@@ -3,8 +3,7 @@ name: Deploy metrics dataproduct pipeline
 on: push
 
 env:
-  IMAGE: navikt/nada-metrics
-  TAG: ${{ github.sha }}
+  IMAGE: IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
 jobs:
   build:
@@ -19,8 +18,8 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Build and publish Docker image
       run: |
-        docker build . --pull --tag ${IMAGE}:${TAG}
-        docker push ${IMAGE}:${TAG}
+        docker build . --pull --tag ${IMAGE}
+        docker push ${IMAGE}
     - name: Deploy to prod-gcp
       uses: nais/deploy/actions/deploy@master
       env:
