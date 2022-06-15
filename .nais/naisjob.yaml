@@ -12,8 +12,6 @@ spec:
   successfulJobsHistoryLimit: 1
   backoffLimit: 2
   concurrencyPolicy: Forbid
-  envFrom:
-    - secret: google-sql-nada-backend
   env:
     - name: SOURCE_AUDIT_LOGS_TABLE
       value: nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access
@@ -21,8 +19,6 @@ spec:
       value: {{stage_table}}
     - name: DATAPRODUCTS_TABLE
       value: {{dp_table}}
-    - name: CLOUD_SQL_INSTANCE
-      value: nada-backend
     - name: NADA_BACKEND_URL
       value: http://nada-backend/api/query
   accessPolicy:
