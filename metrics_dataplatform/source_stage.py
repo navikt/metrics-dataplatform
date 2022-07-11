@@ -42,8 +42,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     df_query = df_query[~df_query["sql_query"].isna()]
     df_query.drop_duplicates(subset=["job_name"], inplace=True)
 
-    df_audit_raw = df_query.append(df_insert).reset_index()
-    df_audit_raw.drop(columns=["index"], inplace=True)
+    df_audit_raw = pd.concat([df_query, df_insert], ignore_index=True)
     df_audit_raw["table_uris"] = df_audit_raw.apply(
         extract_dataset_and_table, axis=1)
 
