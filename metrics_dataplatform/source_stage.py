@@ -46,16 +46,12 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     df_audit_raw["table_uris"] = df_audit_raw.apply(
         extract_dataset_and_table, axis=1)
 
-    # Trenger å splitte ut og lage flere rader når et query har bestått av lesinger fra flere tabeller
-    # Dette kan sikkert gjøres bedre
-    df_audit = pd.DataFrame()
-    for _, row in df_audit_raw.iterrows():
-        for table in row["table_uris"]:
-            row_copy = row.copy()
-            row_copy["table_uri"] = table
-            df_audit = df_audit.append(row_copy)
+    # Splitter ut og lager flere rader når et query har bestått av lesinger fra flere tabeller
+    df_audit = df_audit_raw.explode("table_uris", ignore_index=True).rename(columns={'table_uris': 'table_uri'})
 
-    df_audit = df_audit.reset_index()
+    # Dropper rader uten tabeller (gjelder tilsynelatende bare scheduled queries)
+    df_audit = df_audit[df_audit.table_uri.notna()]
+
     df_audit["metabase"] = df_audit["sql_query"].apply(
         lambda query: True if query.startswith("\"-- Metabase") else False)
     df_audit["service_account"] = df_audit["principalEmail"].apply(
