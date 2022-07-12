@@ -7,7 +7,7 @@ metadata:
   namespace: nada
 spec:
   image: {{ image }}
-  schedule: '11 5 * * *'
+  schedule: '37 6 * * *'
   failedJobsHistoryLimit: 1
   successfulJobsHistoryLimit: 1
   backoffLimit: 2
