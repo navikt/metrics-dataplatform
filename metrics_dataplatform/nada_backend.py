@@ -25,9 +25,9 @@ def read_dataproducts_from_nada() -> pd.DataFrame:
     while not done:
         query = """query ($limit: Int, $offset: Int){
             dataproducts(limit: $limit, offset: $offset){
-            id
-            name
             datasets{
+              id
+              name
               datasource{
               ...on BigQuery{
                   projectID
@@ -51,11 +51,11 @@ def read_dataproducts_from_nada() -> pd.DataFrame:
             dps += new
             offset += limit
 
-    ds = []
+    datasets = []
     for dp in dps:
-        ds += [unpack(ds) for ds in dp["datasets"]]
+        datasets += [unpack(ds) for ds in dp["datasets"]]
 
-    df_nada = pd.DataFrame.from_dict(ds)
+    df_nada = pd.DataFrame.from_dict(datasets)
     df_nada["table_uri"] = df_nada.apply(
         lambda row: f"{row['project_id']}.{row['dataset']}.{row['table_name']}", axis=1)
 
