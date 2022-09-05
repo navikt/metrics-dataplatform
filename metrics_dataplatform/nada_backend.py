@@ -4,16 +4,17 @@ import requests
 from datetime import datetime
 
 
-def unpack(dp: dict):
-    dp["dataproduct_id"] = dp.pop("id")
-    dp["dataproduct"] = dp.pop("name")
-    dp["project_id"] = dp["datasource"]["projectID"]
-    dp["dataset"] = dp["datasource"]["dataset"]
-    dp["created"] = datetime.strptime(
-        dp["datasource"]["created"], "%Y-%m-%dT%H:%M:%S.%fZ")
-    dp["table_name"] = dp["datasource"]["table"]
-    del dp["datasource"]
-    return dp
+# using v1 definition of dataproduct (dataproduct = table)
+def unpack(ds: dict):
+    ds["dataproduct_id"] = ds.pop("id")
+    ds["dataproduct"] = ds.pop("name")
+    ds["project_id"] = ds["datasource"]["projectID"]
+    ds["dataset"] = ds["datasource"]["dataset"]
+    ds["created"] = datetime.strptime(
+        ds["datasource"]["created"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    ds["table_name"] = ds["datasource"]["table"]
+    del ds["datasource"]
+    return ds
 
 
 def read_dataproducts_from_nada() -> pd.DataFrame:
@@ -26,12 +27,14 @@ def read_dataproducts_from_nada() -> pd.DataFrame:
             dataproducts(limit: $limit, offset: $offset){
             id
             name
-            datasource{
-            ...on BigQuery{
-                projectID
-                dataset
-                created
-                table
+            datasets{
+              datasource{
+              ...on BigQuery{
+                  projectID
+                  dataset
+                  created
+                  table
+              }
             }
             }
         }
@@ -48,8 +51,11 @@ def read_dataproducts_from_nada() -> pd.DataFrame:
             dps += new
             offset += limit
 
-    dps = [unpack(dp) for dp in dps]
-    df_nada = pd.DataFrame.from_dict(dps)
+    ds = []
+    for dp in dps:
+        ds += [unpack(ds) for ds in dp["datasets"]]
+
+    df_nada = pd.DataFrame.from_dict(ds)
     df_nada["table_uri"] = df_nada.apply(
         lambda row: f"{row['project_id']}.{row['dataset']}.{row['table_name']}", axis=1)
 
