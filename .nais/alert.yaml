@@ -1,20 +1,22 @@
-apiVersion: nais.io/v1
-kind: Alert
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
 metadata:
-  name: metrics-markedsplassen
+  name: metrics-markedsplassen-alert
   namespace: nada
   labels:
     team: nada
-    app: metrics-markedsplassen
 spec:
-  receivers:
-    slack:
-      channel: '#nada-alerts'
-      prependText: '<!here> | '
-  alerts:
-    - alert: Naisjob feiler
-      description: Naisjob metrics-markedsplassen feiler i namespace nada
-      expr: 'kube_job_failed{job_name=~"^metrics-markedsplassen.*", namespace="nada"} > 0'
-      for: 1m
-      action: "Se logger på https://logs.adeo.no -> søk etter `pod:metrics-markedsplassen* AND namespace:nada`, repo: https://github.com/navikt/metrics-dataplatform"
-      severity: danger
+  groups:
+  - name: metrics-markedsplassen-alert
+    rules:
+    - alert: InstanceDown
+      expr: kube_job_failed{job_name=~"^metrics-markedsplassen.*", namespace="nada"} > 0
+      for: 2m
+      annotations:
+        consequence: Dataprodukt for markedsplassen metrikker blir ikke oppdatert
+        action: "`Se logger på https://logs.adeo.no -> søk etter `pod:metrics-markedsplassen* AND namespace:nada`"
+        summary: |-
+           Naisjob metrics-markedsplassen feiler i prod-gcp namespace nada (repo https://github.com/navikt/metrics-dataplatform)
+      labels:
+        namespace: nada
+        severity: critical
