@@ -14,7 +14,7 @@ spec:
       for: 2m
       annotations:
         consequence: Dataprodukt for markedsplassen metrikker blir ikke oppdatert
-        action: "`Se logger på https://logs.adeo.no -> søk etter `pod:metrics-markedsplassen* AND namespace:nada``"
+        action: "`Se logger på https://logs.adeo.no -> søk etter pod:metrics-markedsplassen* AND namespace:nada`"
         summary: |-
            Naisjob metrics-markedsplassen feiler i prod-gcp namespace nada (repo https://github.com/navikt/metrics-dataplatform)
       labels:
