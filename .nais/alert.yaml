@@ -9,7 +9,7 @@ spec:
   groups:
   - name: metrics-markedsplassen-alert
     rules:
-    - alert: InstanceDown
+    - alert: NaisjobDown
       expr: kube_job_failed{job_name=~"^metrics-markedsplassen.*", namespace="nada"} > 0
       for: 2m
       annotations:
