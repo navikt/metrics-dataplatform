@@ -1,2 +1,2 @@
-# Om dataproduktet
-Dataproduktet inneholder informasjon om team i 
+# metrics_dataplatform
+Repoet inneholder kode som henter og transformerer data fra audit logs i Google Big Query.

@@ -1,0 +1,2 @@
+stage_table: "nada-dev-db2e.bq_metrics_datamarkedsplassen.stage"
+dp_table: "nada-dev-db2e.bq_metrics_datamarkedsplassen.dataproducts"

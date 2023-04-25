@@ -1,4 +1,4 @@
-name: Deploy dataproduct target group
+name: Deploy metrics dataproduct pipeline
 
 on: push
 
@@ -27,9 +27,11 @@ jobs:
         APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
         CLUSTER: dev-gcp
         RESOURCE: .nais/naisjob.yaml
+        VARS: .nais/dev.yaml
     - name: Deploy to prod-gcp
       uses: nais/deploy/actions/deploy@master
       env:
         APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
         CLUSTER: prod-gcp
         RESOURCE: .nais/naisjob.yaml,.nais/alert.yaml
+        VARS: .nais/prod.yaml

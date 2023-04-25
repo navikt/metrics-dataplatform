@@ -3,7 +3,7 @@ kind: Naisjob
 metadata:
   labels:
     team: nada
-  name: dataproduct-target-group
+  name: metrics-markedsplassen
   namespace: nada
 spec:
   image: {{ image }}
@@ -15,6 +15,12 @@ spec:
   env:
     - name: SOURCE_AUDIT_LOGS_TABLE
       value: nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access
+    - name: STAGE_TABLE
+      value: {{stage_table}}
+    - name: DATAPRODUCTS_TABLE
+      value: {{dp_table}}
+    - name: NADA_BACKEND_URL
+      value: http://nada-backend/api/query
   accessPolicy:
     outbound:
       rules:
@@ -22,5 +28,7 @@ spec:
   gcp:
     bigQueryDatasets:
     - description: Metrikker på konsum av dataprodukter
-      name: platform_users
+      name: bq_metrics_datamarkedsplassen
       permission: READWRITE
+    - name: bigquery_audit_logs_org
+      permission: READ
