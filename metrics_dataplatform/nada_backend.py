@@ -50,7 +50,7 @@ def get_dataproducts_from_graphql(offset: int, limit: int):
     return dps
 
 def read_dataproducts_from_nada() -> pd.DataFrame:
-    dps = get_dataproducts_from_graphql(offset: 0, limit: 0)
+    dps = get_dataproducts_from_graphql(offset=0, limit=15)
     datasets = []
 
     for dp in dps:
