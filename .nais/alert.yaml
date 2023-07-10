@@ -14,9 +14,12 @@ spec:
       for: 2m
       annotations:
         consequence: Dataprodukt for markedsplassen metrikker blir ikke oppdatert
-        action: "`Se logger på https://logs.adeo.no -> søk etter pod:metrics-markedsplassen* AND namespace:nada`"
+        action: "Sjekk logger på https://logs.adeo.no for feil. Søk etter `container:metrics-markedsplassen* AND namespace:nada AND cluster:\"prod-gcp\"`"
         summary: |-
-           Naisjob metrics-markedsplassen feiler i prod-gcp namespace nada (repo https://github.com/navikt/metrics-dataplatform)
+           Naisjob metrics-markedsplassen feiler i `prod-gcp:nada`!
+           Av og til får den dårlig data fra Datamarkedsplassen og feiler med `TypeError: 'NoneType' object is not subscriptable`.
+           Hvis neste jobb har kjørt bra så er det bare å slette den `Job`en som har feilet.
+           Repo: https://github.com/navikt/metrics-dataplatform
       labels:
         namespace: nada
         severity: critical
