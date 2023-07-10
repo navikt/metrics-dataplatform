@@ -16,42 +16,43 @@ def unpack(ds: dict):
     del ds["datasource"]
     return ds
 
-
-def read_dataproducts_from_nada() -> pd.DataFrame:
+def get_dataproducts_from_graphql(offset: int, limit: int):
     dps = []
-    offset = 0
-    limit = 15
-    done = False
-    while not done:
-        query = """query ($limit: Int, $offset: Int){
-            dataproducts(limit: $limit, offset: $offset){
-            datasets{
-              id
-              name
-              datasource{
-              ...on BigQuery{
-                  projectID
-                  dataset
-                  created
-                  table
-              }
-            }
-            }
-        }
-        }"""
+    while True:
+        query = """query ($limit: Int, $offset: Int) {
+                     dataproducts(limit: $limit, offset: $offset) {
+                       datasets {
+                         id
+                         name
+                         datasource {
+                           ... on BigQuery {
+                             projectID
+                             dataset
+                             created
+                             table
+                           }
+                         }
+                       }
+                     }
+                   }"""
 
         res = requests.post(os.environ["NADA_BACKEND_URL"],
                             json={"query": query, "variables": {"limit": limit, "offset": offset}})
         res.raise_for_status()
 
-        new = res.json()["data"]["dataproducts"]
-        if len(new) == 0:
-            done = True
-        else:
-            dps += new
-            offset += limit
+        dataproducts = res.json()["data"]["dataproducts"]
+        if len(dataproducts) == 0:
+            break
 
+        dps += dataproducts
+        offset += limit
+
+    return dps
+
+def read_dataproducts_from_nada() -> pd.DataFrame:
+    dps = get_dataproducts_from_graphql(offset: 0, limit: 0)
     datasets = []
+
     for dp in dps:
         datasets += [unpack(ds) for ds in dp["datasets"]]
 
