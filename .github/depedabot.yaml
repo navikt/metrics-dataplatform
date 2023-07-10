@@ -13,3 +13,11 @@ updates:
       deps:
         patters:
           - "*"
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      deps:
+        patters:
+          - "*"
