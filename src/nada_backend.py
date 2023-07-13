@@ -41,10 +41,10 @@ def get_dataproducts_from_graphql(offset: int, limit: int):
                             json={"query": query, "variables": {"limit": limit, "offset": offset}})
         res.raise_for_status()
 
-        if "data" not in res.json():
+        if res.json()["data"] is None:
             return None
 
-        if "dataproducts" not in res.json()["data"]:
+        if res.json()["data"]["dataproducts"] is None:
             return None
 
         dataproducts = res.json()["data"]["dataproducts"]
