@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import requests
+import time
 from datetime import datetime
 
 
@@ -40,6 +41,12 @@ def get_dataproducts_from_graphql(offset: int, limit: int):
                             json={"query": query, "variables": {"limit": limit, "offset": offset}})
         res.raise_for_status()
 
+        if "data" not in res.json():
+            return None
+
+        if "dataproducts" not in res.json()["data"]:
+            return None
+
         dataproducts = res.json()["data"]["dataproducts"]
         if len(dataproducts) == 0:
             break
@@ -50,9 +57,14 @@ def get_dataproducts_from_graphql(offset: int, limit: int):
     return dps
 
 def read_dataproducts_from_nada() -> pd.DataFrame:
-    dps = get_dataproducts_from_graphql(offset=0, limit=15)
-    datasets = []
+    retries = [5, 15, 45, 135]
+    for retry in retries:
+        dps = get_dataproducts_from_graphql(offset=0, limit=15)
+        if dps not None:
+            break
+        time.sleep(retry)
 
+    datasets = []
     for dp in dps:
         datasets += [unpack(ds) for ds in dp["datasets"]]
 
