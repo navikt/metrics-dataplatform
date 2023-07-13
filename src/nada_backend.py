@@ -64,6 +64,10 @@ def read_dataproducts_from_nada() -> pd.DataFrame:
             break
         time.sleep(retry)
 
+    if dps is None:
+        print("Got 'None' from Datamarkedsplassen, failing hard")
+        exit(1)
+
     datasets = []
     for dp in dps:
         datasets += [unpack(ds) for ds in dp["datasets"]]
