@@ -60,7 +60,7 @@ def read_dataproducts_from_nada() -> pd.DataFrame:
     retries = [5, 15, 45, 135]
     for retry in retries:
         dps = get_dataproducts_from_graphql(offset=0, limit=15)
-        if dps not None:
+        if dps is not None:
             break
         time.sleep(retry)
 
