@@ -10,7 +10,6 @@ spec:
   schedule: '11 5 * * *'
   failedJobsHistoryLimit: 1
   successfulJobsHistoryLimit: 1
-  backoffLimit: 2
   concurrencyPolicy: Forbid
   env:
     - name: SOURCE_AUDIT_LOGS_TABLE
