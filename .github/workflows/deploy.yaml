@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - name: Push docker image to GAR
