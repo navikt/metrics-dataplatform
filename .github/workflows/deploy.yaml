@@ -2,15 +2,16 @@ name: Deploy metrics dataproduct pipeline
 
 on: push
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build-and-push:
     name: Build and push GAR
     runs-on: ubuntu-20.04
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - name: Push docker image to GAR
