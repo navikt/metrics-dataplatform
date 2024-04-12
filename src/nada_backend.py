@@ -11,8 +11,11 @@ def unpack(ds: dict):
     ds["dataproduct"] = ds.pop("name")
     ds["project_id"] = ds["datasource"]["projectID"]
     ds["dataset"] = ds["datasource"]["dataset"]
-    ds["created"] = datetime.strptime(
-        ds["datasource"]["created"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    created = ds["datasource"]["created"]
+    try:
+        ds["created"] = datetime.strptime(created, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except ValueError:
+        ds["created"] = datetime.strptime(created, "%Y-%m-%dT%H:%M:%S%fZ")
     ds["table_name"] = ds["datasource"]["table"]
     del ds["datasource"]
     return ds
