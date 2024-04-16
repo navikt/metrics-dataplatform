@@ -19,7 +19,7 @@ spec:
     - name: DATAPRODUCTS_TABLE
       value: {{dp_table}}
     - name: NADA_BACKEND_URL
-      value: http://nada-backend/api/query
+      value: http://nada-backend/api
   accessPolicy:
     outbound:
       rules:
