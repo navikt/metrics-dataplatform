@@ -4,23 +4,7 @@ import requests
 import time
 from datetime import datetime
 
-
-# using v1 definition of dataproduct (dataproduct = table)
-def unpack(ds: dict):
-    ds["dataproduct_id"] = ds.pop("id")
-    ds["dataproduct"] = ds.pop("name")
-    ds["project_id"] = ds["project"]
-    ds["dataset"] = ds["dataset"]
-    created = ds["created"]
-    try:
-        ds["created"] = datetime.strptime(created, "%Y-%m-%dT%H:%M:%S.%fZ")
-    except ValueError:
-        ds["created"] = datetime.strptime(created, "%Y-%m-%dT%H:%M:%S%fZ")
-    ds["table_name"] = ds["datasource"]["table"]
-    del ds["datasource"]
-    return ds
-
-def get_dataproducts_from_graphql() -> list:
+def get_dataproducts_from_dmp() -> list:
     dss = []
 
     res = requests.get(f"{os.environ['NADA_BACKEND_URL']}/datasets")
@@ -34,9 +18,9 @@ def get_dataproducts_from_graphql() -> list:
         dss.append({
             "dataproduct_id": ds["id"],
             "dataproduct": ds["name"],
-            "project_id": ds["datasource"]["projectID"],
-            "dataset": ds["datasource"]["dataset"],
-            "table_name": ds["datasource"]["table"],
+            "project_id": ds["project"],
+            "dataset": ds["dataset"],
+            "table_name": ds["table"],
             "created": created,
         })
 
@@ -45,7 +29,7 @@ def get_dataproducts_from_graphql() -> list:
 def read_dataproducts_from_nada() -> pd.DataFrame:
     retries = [5, 15, 45, 135]
     for retry in retries:
-        datasets = get_dataproducts_from_graphql()
+        datasets = get_dataproducts_from_dmp()
         if datasets is not None:
             break
         time.sleep(retry)
