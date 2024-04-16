@@ -20,7 +20,7 @@ def unpack(ds: dict):
     del ds["datasource"]
     return ds
 
-def get_dataproducts_from_graphql(offset: int, limit: int) -> list:
+def get_dataproducts_from_graphql() -> list:
     dss = []
 
     res = requests.get(f"{os.environ['NADA_BACKEND_URL']}/datasets")
@@ -45,7 +45,7 @@ def get_dataproducts_from_graphql(offset: int, limit: int) -> list:
 def read_dataproducts_from_nada() -> pd.DataFrame:
     retries = [5, 15, 45, 135]
     for retry in retries:
-        datasets = get_dataproducts_from_graphql(offset=0, limit=15)
+        datasets = get_dataproducts_from_graphql()
         if datasets is not None:
             break
         time.sleep(retry)
