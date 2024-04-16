@@ -34,9 +34,9 @@ def get_dataproducts_from_graphql() -> list:
         dss.append({
             "dataproduct_id": ds["id"],
             "dataproduct": ds["name"],
-            "project_id": ds["projectID"],
-            "dataset": ds["dataset"],
-            "table_name": ds["table"],
+            "project_id": ds["datasource"]["projectID"],
+            "dataset": ds["datasource"]["dataset"],
+            "table_name": ds["datasource"]["table"],
             "created": created,
         })
 
