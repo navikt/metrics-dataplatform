@@ -9,9 +9,9 @@ from datetime import datetime
 def unpack(ds: dict):
     ds["dataproduct_id"] = ds.pop("id")
     ds["dataproduct"] = ds.pop("name")
-    ds["project_id"] = ds["datasource"]["projectID"]
-    ds["dataset"] = ds["datasource"]["dataset"]
-    created = ds["datasource"]["created"]
+    ds["project_id"] = ds["project"]
+    ds["dataset"] = ds["dataset"]
+    created = ds["created"]
     try:
         ds["created"] = datetime.strptime(created, "%Y-%m-%dT%H:%M:%S.%fZ")
     except ValueError:
