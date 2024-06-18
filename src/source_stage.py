@@ -134,10 +134,11 @@ def merge_nada_and_audit_logs(df_nada: pd.DataFrame, df_audit: pd.DataFrame) -> 
 
 
 def publish(df_stage: pd.DataFrame) -> None:
-    df_stage.to_gbq(project_id=os.environ["GCP_TEAM_PROJECT_ID"],
-                    destination_table=os.environ["STAGE_TABLE"],
-                    if_exists='append',
-                    location='europe-north1')
+    pandas_gbq.to_gbq(df_stage,
+                      project_id=os.environ["GCP_TEAM_PROJECT_ID"],
+                      destination_table=os.environ["STAGE_TABLE"],
+                      if_exists='append',
+                      location='europe-north1')
 
     print(f"Uploaded {len(df_stage)} rows to {os.environ['STAGE_TABLE']}")
 

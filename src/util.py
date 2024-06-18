@@ -1,10 +1,11 @@
 import os
 import pandas as pd
+import pandas_gbq
 from datetime import datetime, date, timedelta
 
 
 def find_next_upload_date(table_uri: str):
-    last_uploaded_date = pd.read_gbq(f"""SELECT max(date) as date FROM `{table_uri}`""",
+    last_uploaded_date = pandas_gbq.read_gbq(f"""SELECT max(date) as date FROM `{table_uri}`""",
                                      project_id=os.environ["GCP_TEAM_PROJECT_ID"],
                                      location="europe-north1")
     try:

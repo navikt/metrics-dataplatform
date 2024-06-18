@@ -1,10 +1,10 @@
 import os
-import pandas as pd
+import pandas_gbq
 from datetime import datetime
 
 
 def run_stage_to_dp(time_range: str):
-    df_stage = pd.read_gbq(f"""SELECT user, query_timestamp, table_uri, service_account, metabase, intra_team, dataproduct, source, target, dataproduct_id
+    df_stage = pandas_gbq.read_gbq(f"""SELECT user, query_timestamp, table_uri, service_account, metabase, intra_team, dataproduct, source, target, dataproduct_id
     FROM {os.environ['STAGE_TABLE']} WHERE date BETWEEN {time_range}""", project_id=os.environ["GCP_TEAM_PROJECT_ID"], location='europe-north1')
 
     df_stage["date"] = df_stage["query_timestamp"].apply(
@@ -31,10 +31,11 @@ def run_stage_to_dp(time_range: str):
 
     df_dataproducts.fillna(0, inplace=True)
 
-    df_dataproducts.to_gbq(project_id=os.environ['GCP_TEAM_PROJECT_ID'],
-                           destination_table=os.environ["DATAPRODUCTS_TABLE"],
-                           if_exists='append',
-                           location='europe-north1')
+    pandas_gbq.to_gbq(df_dataproducts,
+                      project_id=os.environ['GCP_TEAM_PROJECT_ID'],
+                      destination_table=os.environ["DATAPRODUCTS_TABLE"],
+                      if_exists='append',
+                      location='europe-north1')
 
     print(
         f"Uploaded {len(df_dataproducts)} rows to {os.environ['DATAPRODUCTS_TABLE']}")
