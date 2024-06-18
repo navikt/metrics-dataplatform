@@ -1,4 +1,5 @@
 import pandas as pd
+import pandas_gbq
 import os
 import re
 from nada_backend import read_dataproducts_from_nada
@@ -19,7 +20,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     AND JSON_VALUE(protopayload_auditlog.metadataJson,'$.jobInsertion.job.jobConfig.queryConfig.statementType') = 'SELECT'
     AND DATE(timestamp) BETWEEN {time_range}
     """
-    df_insert = pd.read_gbq(
+    df_insert = pandas_gbq.read_gbq(
         insert_job_query, project_id=os.environ["GCP_TEAM_PROJECT_ID"], location='europe-north1')
     df_insert = df_insert[~df_insert["sql_query"].isna()]
     df_insert.drop_duplicates(subset=["job_name"], inplace=True)
@@ -37,7 +38,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     AND protopayload_auditlog.status IS NULL
     AND DATE(timestamp) BETWEEN {time_range}
     """
-    df_query = pd.read_gbq(
+    df_query = pandas_gbq.read_gbq(
         query_job_query, project_id=os.environ["GCP_TEAM_PROJECT_ID"], location='europe-north1')
     df_query = df_query[~df_query["sql_query"].isna()]
     df_query.drop_duplicates(subset=["job_name"], inplace=True)
