@@ -9,7 +9,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     insert_job_query = f"""
     SELECT
         resource.labels.project_id,
-        protopayload_auditlog.authenticationInfo.principalEmail,
+        COALESCE(protopayload_auditlog.authenticationInfo.principalEmail, protopayload_auditlog.authenticationInfo.principalSubject),
         timestamp,
         REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobConfig.queryConfig.query') as sql_query,
@@ -57,6 +57,8 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
         lambda query: True if query.startswith("\"-- Metabase") else False)
     df_audit["service_account"] = df_audit["principalEmail"].apply(
         lambda email: True if ".gserviceaccount.com" in email else False)
+    df_audit["workload_identity"] = df_audit["principalEmail"].apply(
+        lambda subject: True if "workloadIdentityPools" in subject else False)
     df_audit['week'] = df_audit['timestamp'].dt.isocalendar().week.astype(str)
     df_audit['year'] = df_audit['timestamp'].dt.isocalendar().year.astype(str)
     df_audit['date'] = df_audit['timestamp'].dt.date.astype(str)
@@ -128,7 +130,8 @@ def merge_nada_and_audit_logs(df_nada: pd.DataFrame, df_audit: pd.DataFrame) -> 
                          "table_uri",
                          "sql_query",
                          "source",
-                         "target"]]
+                         "target",
+                         "workload_identity"]]
 
     return df_stage
 
