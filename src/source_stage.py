@@ -9,7 +9,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     insert_job_query = f"""
     SELECT
         resource.labels.project_id,
-        COALESCE(protopayload_auditlog.authenticationInfo.principalEmail, protopayload_auditlog.authenticationInfo.principalSubject),
+        COALESCE(protopayload_auditlog.authenticationInfo.principalEmail, protopayload_auditlog.authenticationInfo.principalSubject) as principalEmail,
         timestamp,
         REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobConfig.queryConfig.query') as sql_query,
