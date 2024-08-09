@@ -7,7 +7,7 @@ from datetime import datetime
 def get_dataproducts_from_dmp() -> list:
     dss = []
 
-    res = requests.get(f"{os.environ['NADA_BACKEND_URL']}/datasets")
+    res = requests.get(f"{os.environ['NADA_BACKEND_URL']}/datasets/")
 
     for ds in res.json():
         try:
