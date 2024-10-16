@@ -1,10 +1,12 @@
 import os
-import pandas as pd
-import requests
 import time
 from datetime import datetime
 
-def get_dataproducts_from_dmp() -> list:
+import pandas as pd
+import requests
+
+
+def get_datasets_from_dmp() -> list:
     dss = []
 
     res = requests.get(f"{os.environ['NADA_BACKEND_URL']}/datasets/")
@@ -16,8 +18,8 @@ def get_dataproducts_from_dmp() -> list:
             created = datetime.strptime(ds["created"], "%Y-%m-%dT%H:%M:%S%fZ")
 
         dss.append({
-            "dataproduct_id": ds["id"],
-            "dataproduct": ds["name"],
+            "dataset_id": ds["id"],
+            "dataset_name": ds["name"],
             "project_id": ds["project"],
             "dataset": ds["dataset"],
             "table_name": ds["table"],
@@ -26,10 +28,10 @@ def get_dataproducts_from_dmp() -> list:
 
     return dss
 
-def read_dataproducts_from_nada() -> pd.DataFrame:
+def read_datasets_from_nada() -> pd.DataFrame:
     retries = [5, 15, 45, 135]
     for retry in retries:
-        datasets = get_dataproducts_from_dmp()
+        datasets = get_datasets_from_dmp()
         if datasets is not None:
             break
         time.sleep(retry)

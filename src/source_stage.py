@@ -1,8 +1,10 @@
-import pandas as pd
-import pandas_gbq
 import os
 import re
-from nada_backend import read_dataproducts_from_nada
+
+import pandas as pd
+import pandas_gbq
+
+from nada_backend import read_datasets_from_nada
 
 
 def read_audit_log_data(time_range) -> pd.DataFrame:
@@ -109,13 +111,13 @@ def merge_nada_and_audit_logs(df_nada: pd.DataFrame, df_audit: pd.DataFrame) -> 
     df_stage['source'] = df_stage['project_id'].str.split(
         '-').apply(lambda x: "-".join(x[:-2]))
     df_stage['target'] = df_stage['job_project_id'].str.split('-').str.get(0)
-    df_stage = df_stage.astype({"dataproduct_id": str})
+    df_stage = df_stage.astype({"dataset_id": str})
 
     df_stage = df_stage[["user",
                          "service_account",
                          "metabase",
-                         "dataproduct_id",
-                         "dataproduct",
+                         "dataset_id",
+                         "dataset_name",
                          "dp_created",
                          "query_timestamp",
                          "year",
@@ -147,7 +149,7 @@ def publish(df_stage: pd.DataFrame) -> None:
 
 
 def run_source_stage(time_range: str):
-    df_nada = read_dataproducts_from_nada()
+    df_nada = read_datasets_from_nada()
     df_audit = read_audit_log_data(time_range)
     df_stage = merge_nada_and_audit_logs(df_nada=df_nada, df_audit=df_audit)
     publish(df_stage)
