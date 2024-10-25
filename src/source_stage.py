@@ -73,7 +73,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
 def extract_dataset_and_table(row):
     tables = []
     query = row["sql_query"]
-    regex_pattern = "(FROM|JOIN|from|join)(\s+`?)(\w|-|`|\.)+`?"
+    regex_pattern = r"(FROM|JOIN|from|join)(\s+`?)(\w|-|`|\.)+`?"
     matched = True
     while matched:
         try:
