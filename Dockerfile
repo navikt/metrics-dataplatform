@@ -1,10 +1,18 @@
-FROM python:3.12-slim
+FROM cgr.dev/chainguard/python:latest-dev AS builder
 
-RUN pip install --upgrade pip
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /app
 
-WORKDIR /app/
-COPY --chown=1069:1069 src/ .
+RUN python3 -m venv venv
+ENV PATH=/app/venv/bin:$PATH
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
 
-CMD ["python", "main.py"]
+FROM cgr.dev/chainguard/python:latest AS runner
+
+WORKDIR /app
+
+COPY src src
+COPY --from=builder /app/venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
+
+ENTRYPOINT ["python", "src/main.py"]
