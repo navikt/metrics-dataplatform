@@ -1,4 +1,4 @@
 pandas==2.2.3
-pandas-gbq==0.25.0
+pandas-gbq==0.26.0
 requests==2.32.3
 tqdm==4.67.1
