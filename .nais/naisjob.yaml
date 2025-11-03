@@ -19,7 +19,7 @@ spec:
     - name: DATAPRODUCTS_TABLE
       value: nada-prod-6977.bq_metrics_datamarkedsplassen.dataproducts
     - name: NADA_BACKEND_URL
-      value: http://nada-backend/api
+      value: http://nada-backend
   accessPolicy:
     outbound:
       rules:

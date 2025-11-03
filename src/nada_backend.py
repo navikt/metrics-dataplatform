@@ -9,7 +9,7 @@ import requests
 def get_datasets_from_dmp() -> list:
     dss = []
 
-    res = requests.get(f"{os.environ['NADA_BACKEND_URL']}/datasets/")
+    res = requests.get(f"{os.environ['NADA_BACKEND_URL']}/internal/api/datasets/")
 
     for ds in res.json():
         try:
