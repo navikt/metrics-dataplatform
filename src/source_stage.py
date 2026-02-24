@@ -30,7 +30,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     query_job_query = f"""
     SELECT 
         resource.labels.project_id,
-        protopayload_auditlog.authenticationInfo.principalEmail,
+        COALESCE(protopayload_auditlog.authenticationInfo.principalEmail, protopayload_auditlog.authenticationInfo.principalSubject) as principalEmail,
         timestamp,
         REGEXP_EXTRACT(protopayload_auditlog.metadataJson, 'projects/([^/]+)/jobs/.+') as job_project_id,
         JSON_EXTRACT(protopayload_auditlog.metadataJson, '$.jobInsertion.job.jobConfig.queryConfig.query') as sql_query,
@@ -45,13 +45,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     df_query = df_query[~df_query["sql_query"].isna()]
     df_query.drop_duplicates(subset=["job_name"], inplace=True)
 
-    df_audit_raw = pd.concat([df_query, df_insert], ignore_index=True)
-
-    # I svært sjeldne tilfeller kan principalEmail være null. Da er de ikke interessante å ta vare på.
-    rows_before = len(df_audit_raw)
-    df_audit_raw = df_audit_raw[df_audit_raw["principalEmail"].notna()]
-    print(f"Dropped {rows_before - len(df_audit_raw)} rows with missing principalEmail")
-    
+    df_audit_raw = pd.concat([df_query, df_insert], ignore_index=True)    
     df_audit_raw["table_uris"] = df_audit_raw.apply(
         extract_dataset_and_table, axis=1)
 
