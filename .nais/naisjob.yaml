@@ -11,6 +11,12 @@ spec:
   failedJobsHistoryLimit: 1
   successfulJobsHistoryLimit: 1
   concurrencyPolicy: Forbid
+  resources:
+    limits:
+      memory: 1024Mi
+    requests:
+      cpu: 100m
+      memory: 512Mi
   env:
     - name: SOURCE_AUDIT_LOGS_TABLE
       value: nada-prod-6977.bigquery_audit_logs_org.cloudaudit_googleapis_com_data_access
