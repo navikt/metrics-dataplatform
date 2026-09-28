@@ -45,7 +45,9 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     df_query = df_query[~df_query["sql_query"].isna()]
     df_query.drop_duplicates(subset=["job_name"], inplace=True)
 
-    df_audit_raw = pd.concat([df_query, df_insert], ignore_index=True)    
+    df_audit_raw = pd.concat([df_query, df_insert], ignore_index=True)
+    if df_audit_raw.empty:
+        return df_audit_raw
     df_audit_raw["table_uris"] = df_audit_raw.apply(
         extract_dataset_and_table, axis=1)
 
@@ -151,5 +153,11 @@ def publish(df_stage: pd.DataFrame) -> None:
 def run_source_stage(time_range: str):
     df_nada = read_datasets_from_nada()
     df_audit = read_audit_log_data(time_range)
+    if df_audit.empty:
+        print(f"No audit log data for {time_range}, skipping")
+        return
     df_stage = merge_nada_and_audit_logs(df_nada=df_nada, df_audit=df_audit)
+    if df_stage.empty:
+        print(f"No stage rows for {time_range}, skipping")
+        return
     publish(df_stage)

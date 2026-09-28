@@ -7,6 +7,9 @@ import pandas_gbq
 def run_stage_to_dp(time_range: str):
     df_stage = pandas_gbq.read_gbq(f"""SELECT user, query_timestamp, table_uri, service_account, metabase, intra_team, workload_identity, dataset_name, source, target, dataset_id
     FROM {os.environ['STAGE_TABLE']} WHERE date BETWEEN {time_range}""", project_id=os.environ["GCP_TEAM_PROJECT_ID"], location='europe-north1')
+    if df_stage.empty:
+        print(f"No stage data for {time_range}, skipping")
+        return
 
     df_stage["date"] = df_stage["query_timestamp"].apply(
         lambda t: datetime.combine(t.date(), datetime.min.time()))
