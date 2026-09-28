@@ -57,8 +57,10 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     # Dropper rader uten tabeller (gjelder tilsynelatende bare scheduled queries)
     df_audit = df_audit[df_audit.table_uri.notna()]
 
+    # Metabase adds "-- Metabase" (+ ":: userID: ..." when the user is known, not for public dashboards).
+    # Before v0.63 the comment is prepended, from v0.63 appended.
     df_audit["metabase"] = df_audit["sql_query"].apply(
-        lambda query: "-- Metabase::" in query)
+        lambda query: "-- Metabase" in query)
     df_audit["service_account"] = df_audit["principalEmail"].apply(
         lambda email: True if ".gserviceaccount.com" in email else False)
     df_audit["workload_identity"] = df_audit["principalEmail"].apply(
