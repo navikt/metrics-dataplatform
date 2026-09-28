@@ -56,7 +56,7 @@ def read_audit_log_data(time_range) -> pd.DataFrame:
     df_audit = df_audit[df_audit.table_uri.notna()]
 
     df_audit["metabase"] = df_audit["sql_query"].apply(
-        lambda query: True if query.startswith("\"-- Metabase") else False)
+        lambda query: "-- Metabase::" in query)
     df_audit["service_account"] = df_audit["principalEmail"].apply(
         lambda email: True if ".gserviceaccount.com" in email else False)
     df_audit["workload_identity"] = df_audit["principalEmail"].apply(
