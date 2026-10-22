@@ -1,5 +1,5 @@
-pandas==3.0.5
-pandas-gbq==0.35.1
+pandas==3.0.6
+pandas-gbq==0.35.2
 requests==2.34.2
-tqdm==4.70.0
-tzdata==2026.3
+tqdm==4.70.1
+tzdata==2026.4
